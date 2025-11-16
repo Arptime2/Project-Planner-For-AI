@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Planner</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="tabs">
+        <button class="tab active">Project</button>
+        <button class="tab" onclick="switchTab('prompts')">Prompts</button>
+    </div>
+    <button id="backBtn" onclick="window.location.href='../main.html'">Back to Projects</button>
+    <div class="container">
+        <div class="section tree-section">
+            <h2>Idea Folder Structure</h2>
+            <div id="tree"></div>
+        </div>
+        <div class="section ideas-section">
+            <h2>Ideas</h2>
+            <textarea id="ideaInput" placeholder="Write down ideas that might fit into the tree later..."></textarea>
+            <button id="addIdeaBtn">Add Idea</button>
+            <ul id="ideasList"></ul>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

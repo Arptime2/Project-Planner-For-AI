@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompts Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="tabs">
+        <button class="tab" onclick="switchTab('project')">Project</button>
+        <button class="tab active">Prompts</button>
+    </div>
+    <button id="backBtn" onclick="window.location.href='../main.html'">Back to Projects</button>
+    <div class="container">
+        <div class="section">
+            <h2>Generated Prompts</h2>
+            <div id="promptsList"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

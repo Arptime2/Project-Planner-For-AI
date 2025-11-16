@@ -1,0 +1,131 @@
+:root {
+    --bg-primary: #0a0a0a;
+    --bg-secondary: rgba(255, 255, 255, 0.05);
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --accent-green: #00ff88;
+    --accent-blue: #0088ff;
+    --accent-red: #ff0088;
+    --border: rgba(255, 255, 255, 0.1);
+    --glow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a1a 100%);
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: auto;
+    color: var(--text-primary);
+}
+
+.container {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    border-radius: 10px;
+}
+
+h1 {
+    text-align: center;
+    color: var(--accent-green);
+    text-shadow: var(--glow);
+    font-weight: 300;
+    margin-bottom: 40px;
+}
+
+.section {
+    margin-bottom: 30px;
+}
+
+h2 {
+    color: var(--accent-blue);
+    border-bottom: 2px solid var(--accent-blue);
+    padding-bottom: 10px;
+    font-weight: 300;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-sizing: border-box;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: var(--accent-green);
+    box-shadow: var(--glow);
+    outline: none;
+}
+
+button {
+    background: rgba(0, 255, 136, 0.3);
+    color: var(--text-primary);
+    padding: 12px 24px;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px;
+    font-weight: 500;
+    transition: transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4), 0 0 30px rgba(0, 255, 136, 0.2);
+    backdrop-filter: blur(15px);
+}
+
+button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.6), 0 0 40px rgba(0, 255, 136, 0.3);
+}
+
+.project-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.project-list li {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-list li:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-blue);
+}
+
+.project-list li button {
+    background: rgba(0, 255, 136, 0.3);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    width: auto;
+    margin-right: 10px;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4), 0 0 25px rgba(0, 255, 136, 0.2);
+    backdrop-filter: blur(15px);
+}
+
+.project-list li button:last-child {
+    margin-right: 0;
+}
+
+.project-list li button:hover {
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6), 0 0 35px rgba(0, 255, 136, 0.3);
+}
