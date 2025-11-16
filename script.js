@@ -29,9 +29,10 @@ function createNewProject() {
     }
     const projects = JSON.parse(localStorage.getItem('projects') || '[]');
     const id = Date.now().toString();
-    projects.push({ id, name, data: {} });
+    projects.push({ id, name, data: { nodes: [{ id: 'root', text: name, children: [] }], ideas: [] } });
     localStorage.setItem('projects', JSON.stringify(projects));
     localStorage.setItem('currentProject', id);
+    localStorage.setItem(id, JSON.stringify({ nodes: [{ id: 'root', text: name, children: [] }], ideas: [] }));
     document.getElementById('newProjectName').value = '';
     loadProjects();
     window.location.href = 'project-planner/index.html';

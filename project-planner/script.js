@@ -90,14 +90,17 @@ function renderItem(node, ul) {
     text.ondblclick = () => editNode(node.id);
     const btns = document.createElement('div');
     btns.className = 'folder-buttons';
-    const del = document.createElement('button');
-    del.textContent = '×';
-    del.className = 'delete-btn';
-    del.onclick = () => deleteNode(node.id);
+    if (node.id !== 'root') {
+        const del = document.createElement('button');
+        del.textContent = '×';
+        del.className = 'delete-btn';
+        del.onclick = () => deleteNode(node.id);
+        btns.appendChild(del);
+    }
     const addSub = document.createElement('button');
     addSub.textContent = 'Add Sub';
     addSub.onclick = () => addChild(node.id);
-    btns.append(del, addSub);
+    btns.appendChild(addSub);
     li.append(icon, text, btns);
     if (node.children?.length) {
         const subUl = document.createElement('ul');
@@ -201,6 +204,7 @@ function switchTab(tab) {
 }
 
 function deleteNode(id) {
+    if (id === 'root') return; // Cannot delete root
     function remove(nodes) {
         for (let i = 0; i < nodes.length; i++) {
             if (nodes[i].id === id) { nodes.splice(i, 1); return true; }
