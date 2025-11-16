@@ -11,3 +11,8 @@
 - One tab to plan the actual project in a tree structure to plan every smallest feature with a section where you can write down just ideas that will come somewhere into the tree but you don't know where yet (in an own folder)
 
 - One tab to create a new project/ open existing project plans (main.html)
+
+
+
+## Page
+https://arptime2.github.io/Project-Planner-For-AI/main.html
