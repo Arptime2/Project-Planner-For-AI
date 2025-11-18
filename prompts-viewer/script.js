@@ -1,11 +1,15 @@
 const currentProject = localStorage.getItem('currentProject');
+let currentPromptIndex = 0;
+let allPrompts = [];
 
 if (!currentProject) {
     alert('No project selected. Please open a project first.');
     window.location.href = '../main.html';
 } else {
     const data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": [], "ideas": []}');
-    displayPrompts(data);
+    allPrompts = generatePrompts(data.nodes);
+    showCurrentPrompt();
+    displayAllPrompts();
 }
 
 function generatePrompts(nodes, prompts = [], prefix = '') {
@@ -28,11 +32,30 @@ function generatePrompts(nodes, prompts = [], prefix = '') {
     return prompts;
 }
 
-function displayPrompts(data) {
-    const prompts = generatePrompts(data.nodes);
+function showCurrentPrompt() {
+    const promptDiv = document.getElementById('currentPrompt');
+    if (currentPromptIndex < allPrompts.length) {
+        promptDiv.innerHTML = `
+            <div class="prompt-item">
+                <div class="prompt-text">${currentPromptIndex + 1}. ${allPrompts[currentPromptIndex]}</div>
+                <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+            </div>
+        `;
+    } else {
+        promptDiv.innerHTML = '<p>All prompts completed.</p>';
+    }
+}
+
+function copyPrompt() {
+    navigator.clipboard.writeText(allPrompts[currentPromptIndex]).then(() => {
+        alert('Prompt copied!');
+    });
+}
+
+function displayAllPrompts() {
     const list = document.getElementById('promptsList');
     list.innerHTML = '';
-    prompts.forEach((prompt, index) => {
+    allPrompts.forEach((prompt, index) => {
         const item = document.createElement('div');
         item.className = 'prompt-item';
         const text = document.createElement('div');
@@ -51,6 +74,45 @@ function displayPrompts(data) {
         list.appendChild(item);
     });
 }
+
+function nextPrompt() {
+    currentPromptIndex++;
+    if (currentPromptIndex % 5 === 0 || currentPromptIndex >= allPrompts.length) {
+        showCheckpoint();
+    } else {
+        showCurrentPrompt();
+    }
+}
+
+function showCheckpoint() {
+    const data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": []}');
+    const features = flattenNodes(data.nodes);
+    const list = document.getElementById('checkpointList');
+    list.innerHTML = '';
+    features.forEach(feature => {
+        const li = document.createElement('li');
+        li.textContent = feature;
+        list.appendChild(li);
+    });
+    document.getElementById('checkpointBox').style.display = 'block';
+}
+
+function flattenNodes(nodes, result = [], prefix = '') {
+    nodes.forEach(node => {
+        const fullName = prefix ? `${prefix} > ${node.text}` : node.text;
+        result.push(fullName);
+        if (node.children) {
+            flattenNodes(node.children, result, fullName);
+        }
+    });
+    return result;
+}
+
+document.getElementById('nextPromptBtn').addEventListener('click', nextPrompt);
+document.getElementById('continueBtn').addEventListener('click', () => {
+    document.getElementById('checkpointBox').style.display = 'none';
+    showCurrentPrompt();
+});
 
 function switchTab(tab) {
     if (tab === 'project') {

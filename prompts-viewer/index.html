@@ -13,8 +13,17 @@
     </div>
     <button id="backBtn" onclick="window.location.href='../main.html'">Back to Projects</button>
     <div class="container">
+        <button id="nextPromptBtn">Next Prompt</button>
+        <div id="checkpointBox" class="checkpoint-box" style="display: none;">
+            <h3>Checkpoint</h3>
+            <p>Verify the following features have been implemented:</p>
+            <ul id="checkpointList"></ul>
+            <button id="continueBtn">Continue</button>
+        </div>
         <div class="section">
             <h2>Generated Prompts</h2>
+            <div id="currentPrompt"></div>
+            <h3>All Prompts</h3>
             <div id="promptsList"></div>
         </div>
     </div>
