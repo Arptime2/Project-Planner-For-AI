@@ -3,6 +3,10 @@ let draggedId = null;
 let draggedType = null;
 let currentPath = [];
 let data;
+let pendingItemName = null;
+let isPressing = false;
+let pressStartTime = 0;
+let pressCheckInterval = null;
 
 function handleDragStart(e) { draggedId = e.target.closest('.folder-item').dataset.id; draggedType = 'node'; }
 function handleDrop(e) {
@@ -11,14 +15,13 @@ function handleDrop(e) {
     if (targetItem) {
         const targetId = targetItem.dataset.id;
         if (draggedType === 'node' && draggedId !== targetId) moveNode(draggedId, targetId);
-        else if (draggedType === 'idea') addIdeaToNode(draggedId, targetId);
     }
     document.querySelectorAll('.folder-item').forEach(n => n.classList.remove('drag-over'));
 }
 function handleDragOver(e) { e.preventDefault(); const item = e.target.closest('.folder-item'); if (item) item.classList.add('drag-over'); }
 function handleDragLeave(e) { const item = e.target.closest('.folder-item'); if (item) item.classList.remove('drag-over'); }
-function handleIdeaDragStart(e) { draggedId = Array.from(e.target.closest('ul').children).indexOf(e.target.closest('li')); draggedType = 'idea'; }
-function handleTreeDrop(e) { e.preventDefault(); if (draggedType === 'idea') addIdeaAsRoot(draggedId); }
+
+function handleTreeDrop(e) { e.preventDefault(); }
 function addEventListeners() {
     document.querySelectorAll('.folder-item').forEach(item => {
         item.draggable = true;
@@ -27,18 +30,26 @@ function addEventListeners() {
         item.addEventListener('dragleave', handleDragLeave);
         item.addEventListener('drop', handleDrop);
     });
-    document.querySelectorAll('#ideasList li').forEach(li => { li.draggable = true; li.addEventListener('dragstart', handleIdeaDragStart); });
+
     document.getElementById('tree').addEventListener('dragover', handleDragOver);
     document.getElementById('tree').addEventListener('drop', handleTreeDrop);
 }
 
 if (!currentProject) { alert('No project selected. Please open a project first.'); window.location.href = '../main.html'; }
 else {
-    data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": [], "ideas": []}');
+    data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": []}');
     renderTree();
     addEventListeners();
-    renderIdeas(data.ideas);
 }
+
+document.getElementById('submitNewItem').onclick = () => {
+    const name = document.getElementById('newItemName').value.trim();
+    if (name) {
+        pendingItemName = name;
+        document.getElementById('newItemName').value = '';
+        document.querySelector('.container').classList.add('selection-mode');
+    }
+};
 
 function saveData() { localStorage.setItem(currentProject, JSON.stringify(data)); }
 
@@ -57,12 +68,15 @@ function renderTree() {
     data.nodes.forEach(item => renderItem(item, ul));
     // restore expanded
     expanded.forEach(id => {
-        const li = document.querySelector(`.folder-item[data-id="${id}"]`);
-        if (li) {
-            const sublist = li.querySelector('.folder-sublist');
-            if (sublist) sublist.style.display = 'block';
-            const icon = li.querySelector('.folder-icon');
-            if (icon) icon.textContent = '📂';
+        const node = findNode(data.nodes, id);
+        if (node && node.children && node.children.length > 0) {
+            const li = document.querySelector(`.folder-item[data-id="${id}"]`);
+            if (li) {
+                const sublist = li.querySelector('.folder-sublist');
+                if (sublist) sublist.style.display = 'block';
+                const icon = li.querySelector('.folder-icon');
+                if (icon) icon.textContent = '📂';
+            }
         }
     });
     addEventListeners();
@@ -74,6 +88,20 @@ function renderItem(node, ul) {
     const li = document.createElement('li');
     li.className = 'folder-item';
     li.dataset.id = node.id;
+    li.onclick = () => {
+        if (pendingItemName) {
+            addChild(node.id, pendingItemName);
+            pendingItemName = null;
+            document.querySelector('.container').classList.remove('selection-mode');
+        }
+    };
+    // Long press for delete
+    li.addEventListener('mousedown', (e) => { e.stopPropagation(); if (!e.target.closest('.folder-text')) startLongPress(node.id, li); });
+    li.addEventListener('mouseup', (e) => { e.stopPropagation(); cancelLongPress(li); });
+    li.addEventListener('mouseleave', (e) => { e.stopPropagation(); cancelLongPress(li); });
+    li.addEventListener('touchstart', (e) => { e.stopPropagation(); if (!e.target.closest('.folder-text')) startLongPress(node.id, li); });
+    li.addEventListener('touchend', (e) => { e.stopPropagation(); cancelLongPress(li); });
+    li.addEventListener('touchmove', (e) => { e.stopPropagation(); cancelLongPress(li); });
     const icon = document.createElement('span');
     icon.className = 'folder-icon';
     icon.textContent = node.children?.length ? '📁' : '📄';
@@ -86,21 +114,12 @@ function renderItem(node, ul) {
     };
     const text = document.createElement('span');
     text.className = 'folder-text';
+    text.contentEditable = false;
     text.textContent = node.text;
     text.ondblclick = () => editNode(node.id);
     const btns = document.createElement('div');
     btns.className = 'folder-buttons';
-    if (node.id !== 'root') {
-        const del = document.createElement('button');
-        del.textContent = '×';
-        del.className = 'delete-btn';
-        del.onclick = () => deleteNode(node.id);
-        btns.appendChild(del);
-    }
-    const addSub = document.createElement('button');
-    addSub.textContent = 'Add Sub';
-    addSub.onclick = () => addChild(node.id);
-    btns.appendChild(addSub);
+    // Removed delete button
     li.append(icon, text, btns);
     if (node.children?.length) {
         const subUl = document.createElement('ul');
@@ -120,31 +139,13 @@ function findNode(nodes, id) {
     }
 }
 
-function addChild(parentId) {
+function addChild(parentId, name = 'Idea') {
     const parent = findNode(data.nodes, parentId);
     if (parent) {
-        const newNode = { id: Date.now().toString(), text: 'Idea', children: [] };
+        const newNode = { id: Date.now().toString(), text: name, children: [] };
         parent.children.push(newNode);
         saveData();
         renderTree();
-        // Make it editable immediately
-        setTimeout(() => {
-            const li = document.querySelector(`.folder-item[data-id="${newNode.id}"]`);
-            if (li) {
-                const textEl = li.querySelector('.folder-text');
-                if (textEl) {
-                    textEl.contentEditable = true;
-                    textEl.focus();
-                    textEl.onblur = () => saveEdit(newNode.id, textEl);
-                    textEl.onkeydown = (e) => {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            textEl.blur();
-                        }
-                    };
-                }
-            }
-        }, 0);
     }
 }
 
@@ -204,10 +205,15 @@ function switchTab(tab) {
 }
 
 function deleteNode(id) {
+    console.log('Attempting to delete node with id:', id);
     if (id === 'root') return; // Cannot delete root
     function remove(nodes) {
         for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].id === id) { nodes.splice(i, 1); return true; }
+            if (nodes[i].id === id) {
+                console.log('Removing node:', nodes[i].text);
+                nodes.splice(i, 1);
+                return true;
+            }
             if (remove(nodes[i].children)) return true;
         }
         return false;
@@ -241,60 +247,26 @@ function moveNode(fromId, toId) {
     }
 }
 
-function addIdeaToNode(ideaIndex, nodeId) {
-    const ideaText = data.ideas[ideaIndex];
-    if (ideaText) {
-        const newNode = { id: Date.now().toString(), text: ideaText, children: [] };
-        function add(nodes) {
-            for (let node of nodes) {
-                if (node.id === nodeId) { node.children.push(newNode); return true; }
-                if (add(node.children)) return true;
-            }
-            return false;
+function startLongPress(nodeId, li) {
+    isPressing = true;
+    pressStartTime = Date.now();
+    li.classList.add('pressing');
+    pressCheckInterval = setInterval(() => {
+        if (isPressing && Date.now() - pressStartTime >= 1500) {
+            console.log('Deleting node', nodeId);
+            deleteNode(nodeId);
+            cancelLongPress(li);
         }
-        add(data.nodes);
-        data.ideas.splice(ideaIndex, 1);
-        saveData();
-        renderTree();
-        renderIdeas(data.ideas);
+    }, 100);
+    console.log('Long press started on', nodeId);
+}
+
+function cancelLongPress(li) {
+    isPressing = false;
+    if (pressCheckInterval) {
+        clearInterval(pressCheckInterval);
+        pressCheckInterval = null;
     }
+    li.classList.remove('pressing');
+    console.log('Long press cancelled');
 }
-
-function addIdeaAsRoot(ideaIndex) {
-    const ideaText = data.ideas[ideaIndex];
-    if (ideaText) {
-        data.nodes.push({ id: Date.now().toString(), text: ideaText, children: [] });
-        data.ideas.splice(ideaIndex, 1);
-        saveData();
-        renderTree();
-        renderIdeas(data.ideas);
-    }
-}
-
-function renderIdeas(ideas) {
-    const list = document.getElementById('ideasList');
-    list.innerHTML = '';
-    ideas.forEach((idea, i) => {
-        const li = document.createElement('li');
-        li.textContent = idea;
-        const del = document.createElement('button');
-        del.textContent = '×';
-        del.className = 'delete-btn';
-        del.onclick = () => { data.ideas.splice(i, 1); saveData(); renderIdeas(data.ideas); };
-        li.appendChild(del);
-        list.appendChild(li);
-    });
-}
-
-function addIdea() {
-    const input = document.getElementById('ideaInput');
-    const text = input.value.trim();
-    if (text) {
-        data.ideas.push(text);
-        saveData();
-        renderIdeas(data.ideas);
-        input.value = '';
-    }
-}
-
-document.getElementById('addIdeaBtn').onclick = addIdea;

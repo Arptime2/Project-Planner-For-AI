@@ -11,8 +11,16 @@ if (!currentProject) {
 function generatePrompts(nodes, prompts = [], prefix = '') {
     nodes.forEach(node => {
         const fullName = prefix ? `${prefix} > ${node.text}` : node.text;
-        prompts.push(`Plan the implementation and structure for "${fullName}". Include key features, sub-components, and potential challenges.`);
-        prompts.push(`Create a detailed outline for "${fullName}". Describe the purpose, dependencies, and integration points.`);
+        let prompt;
+        if (prefix === '') {
+            prompt = `Create a root-level README.md for '${fullName}' with project overview and ideas. Add MD files for each tree node at level 0, containing general plans and brainstorming notes.`;
+        } else if (node.children && node.children.length > 0) {
+            prompt = `For '${fullName}', create MD plan files outlining sub-components. Generate prototype files (e.g., .js, .html) with function stubs and folder structure, but no real logic code. Plan structure and create files as structure.`;
+        } else {
+            prompt = `For '${fullName}', mark as read and delete the used plan MD files. Use the prototype functions and files, and fill the correct ones with the correct logic code.`;
+        }
+        prompt += ' Ensure the implementation follows best practices, handles edge cases, and includes comments for clarity.';
+        prompts.push(prompt);
         if (node.children && node.children.length > 0) {
             generatePrompts(node.children, prompts, fullName);
         }
@@ -29,7 +37,7 @@ function displayPrompts(data) {
         item.className = 'prompt-item';
         const text = document.createElement('div');
         text.className = 'prompt-text';
-        text.textContent = prompt;
+        text.textContent = `${index + 1}. ${prompt}`;
         const copyBtn = document.createElement('button');
         copyBtn.className = 'copy-btn';
         copyBtn.textContent = 'Copy';

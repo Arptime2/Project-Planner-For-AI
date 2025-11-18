@@ -81,6 +81,7 @@ body {
     box-sizing: border-box;
     width: calc(100% - 100px);
     margin-left: 100px;
+    overflow-x: hidden;
 }
 
 #backBtn {
@@ -119,15 +120,57 @@ body {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
-.tree-section {
-    border-right: 1px solid var(--border);
-}
+
 
 h2 {
     color: var(--accent-blue);
     margin-top: 0;
     font-weight: 300;
     text-shadow: 0 0 10px rgba(0, 136, 255, 0.5);
+}
+
+.add-item-section {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.add-item-section input {
+    flex: 1;
+    width: auto;
+    margin: 0;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(0, 255, 136, 0.3);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4), 0 0 30px rgba(0, 255, 136, 0.2);
+    backdrop-filter: blur(15px);
+    transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.add-item-section input {
+    color: var(--text-primary);
+}
+
+.add-item-section input::placeholder {
+    color: #ffffff;
+}
+
+.add-item-section input:focus {
+    border-color: var(--accent-green);
+    box-shadow: 0 8px 25px rgba(0, 255, 136, 0.6), 0 0 40px rgba(0, 255, 136, 0.3);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+.selection-mode .folder-item {
+    cursor: pointer;
+}
+
+.selection-mode .folder-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--accent-green);
 }
 
 button {
@@ -156,6 +199,10 @@ button:hover {
 .folder-list {
     list-style-type: none;
     padding-left: 0;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
 }
 
 .folder-item {
@@ -165,10 +212,17 @@ button:hover {
     padding: 8px;
     border-radius: 6px;
     transition: background-color 0.3s;
+    display: block;
+    overflow: hidden;
 }
 
 .folder-item.drag-over {
     background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--accent-green);
+}
+
+.folder-item.pressing {
+    background: rgba(0, 255, 136, 0.2);
     border: 1px solid var(--accent-green);
 }
 
@@ -182,24 +236,21 @@ button:hover {
 
 .folder-text {
     cursor: text;
-    display: inline-block;
     color: var(--text-primary);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 60px);
+    display: inline-block;
 }
 
-.folder-text[contenteditable] {
-    border: 1px solid var(--accent-green);
-    border-radius: 4px;
-    padding: 2px 4px;
-    background: var(--bg-secondary);
-    outline: none;
-    box-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
-}
+
 
 .folder-buttons {
     display: none;
     position: absolute;
-    right: 0;
-    top: 0;
+    right: 8px;
+    top: 8px;
 }
 
 .folder-item:hover .folder-buttons {
@@ -297,59 +348,7 @@ button:hover {
     margin: 0 2px;
 }
 
-textarea {
-    width: 100%;
-    height: 100px;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    box-sizing: border-box;
-    margin: 10px 0;
-    resize: vertical;
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-family: inherit;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
 
-textarea:focus {
-    border-color: var(--accent-green);
-    box-shadow: var(--glow);
-    outline: none;
-}
-
-#ideasList {
-    list-style-type: none;
-    padding: 0;
-}
-
-#ideasList li {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border);
-    margin: 5px 0;
-    padding: 10px;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.3s, border-color 0.3s;
-}
-
-#ideasList li:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--accent-blue);
-}
-
-#ideasList li button {
-    background: linear-gradient(45deg, var(--accent-green), var(--accent-blue));
-    padding: 4px 8px;
-    font-size: 12px;
-    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-}
-
-#ideasList li button:hover {
-    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
-}
 
 .delete-btn {
     background: rgba(255, 0, 0, 0.3) !important;
