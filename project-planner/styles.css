@@ -67,7 +67,7 @@ body {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1a1a 100%);
+    background: linear-gradient(to bottom, #000000 0%, #1a1a1a 100%);
     margin: 0;
     padding: 0;
     height: 100vh;
@@ -169,8 +169,8 @@ h2 {
 }
 
 .selection-mode .folder-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--accent-green);
+    background: rgba(0, 255, 136, 0.02);
+    border: 1px solid rgba(0, 255, 136, 0.1);
 }
 
 button {
@@ -209,7 +209,7 @@ button:hover {
     margin: 5px 0;
     cursor: move;
     position: relative;
-    padding: 8px;
+    padding: 8px 8px 8px 30px;
     border-radius: 6px;
     transition: background-color 0.3s;
     display: block;
@@ -227,11 +227,31 @@ button:hover {
 }
 
 .folder-icon {
-    margin-right: 10px;
+    width: 20px;
+    height: 100%;
+    border-radius: 4px;
+    position: absolute;
+    left: 0;
+    top: 0;
     cursor: pointer;
-    font-size: 18px;
-    display: inline-block;
-    color: var(--accent-blue);
+    border: none;
+}
+
+.folder-icon.file {
+    background: rgba(0, 255, 136, 0.6);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.6), 0 0 20px rgba(0, 255, 136, 0.6);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.folder-icon.folder-closed {
+    background: #0088ff;
+    box-shadow: 0 0 10px #0088ff, 0 0 20px #0088ff;
+}
+
+.folder-icon.folder-open {
+    background: #000088;
+    box-shadow: 0 0 10px #000088, 0 0 20px #000088;
 }
 
 .folder-text {

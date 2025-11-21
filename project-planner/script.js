@@ -75,7 +75,10 @@ function renderTree() {
                 const sublist = li.querySelector('.folder-sublist');
                 if (sublist) sublist.style.display = 'block';
                 const icon = li.querySelector('.folder-icon');
-                if (icon) icon.textContent = '📂';
+                if (icon) {
+                    icon.classList.remove('folder-closed');
+                    icon.classList.add('folder-open');
+                }
             }
         }
     });
@@ -104,12 +107,22 @@ function renderItem(node, ul) {
     li.addEventListener('touchmove', (e) => { e.stopPropagation(); cancelLongPress(li); });
     const icon = document.createElement('span');
     icon.className = 'folder-icon';
-    icon.textContent = node.children?.length ? '📁' : '📄';
+    if (node.children?.length) {
+        icon.classList.add('folder-closed');
+    } else {
+        icon.classList.add('file');
+    }
     icon.onclick = () => {
         const sublist = li.querySelector('.folder-sublist');
         if (sublist) {
             sublist.style.display = sublist.style.display === 'none' ? 'block' : 'none';
-            icon.textContent = sublist.style.display === 'none' ? '📁' : '📂';
+            if (sublist.style.display === 'none') {
+                icon.classList.remove('folder-open');
+                icon.classList.add('folder-closed');
+            } else {
+                icon.classList.remove('folder-closed');
+                icon.classList.add('folder-open');
+            }
         }
     };
     const text = document.createElement('span');
