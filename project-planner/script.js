@@ -4,21 +4,42 @@ let draggedType = null;
 let currentPath = [];
 let data;
 let pendingItemName = null;
-let isPressing = false;
+let isSelecting = false;
+let selectedIds = [];
+let selectionStartId = null;
+let isLongPressing = false;
+let hasMoved = false;
 let pressStartTime = 0;
 let pressCheckInterval = null;
 
-function handleDragStart(e) { draggedId = e.target.closest('.folder-item').dataset.id; draggedType = 'node'; }
+function handleDragStart(e) {
+    if (isSelecting) {
+        e.preventDefault();
+        return;
+    }
+    draggedId = e.target.closest('.folder-item').dataset.id;
+    draggedType = 'node';
+}
 function handleDrop(e) {
     e.preventDefault();
     const targetItem = e.target.closest('.folder-item');
     if (targetItem) {
         const targetId = targetItem.dataset.id;
-        if (draggedType === 'node' && draggedId !== targetId) moveNode(draggedId, targetId);
+        if (isSelecting) {
+            completeGroup();
+        } else if (draggedType === 'node' && draggedId !== targetId) {
+            moveNode(draggedId, targetId);
+        }
     }
     document.querySelectorAll('.folder-item').forEach(n => n.classList.remove('drag-over'));
 }
-function handleDragOver(e) { e.preventDefault(); const item = e.target.closest('.folder-item'); if (item) item.classList.add('drag-over'); }
+function handleDragOver(e) {
+    e.preventDefault();
+    const item = e.target.closest('.folder-item');
+    if (item) {
+        item.classList.add('drag-over');
+    }
+}
 function handleDragLeave(e) { const item = e.target.closest('.folder-item'); if (item) item.classList.remove('drag-over'); }
 
 function handleTreeDrop(e) { e.preventDefault(); }
@@ -91,50 +112,115 @@ function renderItem(node, ul) {
     const li = document.createElement('li');
     li.className = 'folder-item';
     li.dataset.id = node.id;
-    li.onclick = () => {
-        if (pendingItemName) {
-            addChild(node.id, pendingItemName);
-            pendingItemName = null;
-            document.querySelector('.container').classList.remove('selection-mode');
-        }
-    };
-    // Long press for delete
-    li.addEventListener('mousedown', (e) => { e.stopPropagation(); if (!e.target.closest('.folder-text')) startLongPress(node.id, li); });
-    li.addEventListener('mouseup', (e) => { e.stopPropagation(); cancelLongPress(li); });
-    li.addEventListener('mouseleave', (e) => { e.stopPropagation(); cancelLongPress(li); });
-    li.addEventListener('touchstart', (e) => { e.stopPropagation(); if (!e.target.closest('.folder-text')) startLongPress(node.id, li); });
-    li.addEventListener('touchend', (e) => { e.stopPropagation(); cancelLongPress(li); });
-    li.addEventListener('touchmove', (e) => { e.stopPropagation(); cancelLongPress(li); });
-    const icon = document.createElement('span');
-    icon.className = 'folder-icon';
-    if (node.children?.length) {
-        icon.classList.add('folder-closed');
+    if (node.type === 'group') {
+        li.classList.add('group');
+        li.onclick = () => expandGroup(node.id);
     } else {
-        icon.classList.add('file');
-    }
-    icon.onclick = () => {
-        const sublist = li.querySelector('.folder-sublist');
-        if (sublist) {
-            sublist.style.display = sublist.style.display === 'none' ? 'block' : 'none';
-            if (sublist.style.display === 'none') {
-                icon.classList.remove('folder-open');
-                icon.classList.add('folder-closed');
-            } else {
-                icon.classList.remove('folder-closed');
-                icon.classList.add('folder-open');
+        li.onclick = () => {
+            if (pendingItemName) {
+                addChild(node.id, pendingItemName);
+                pendingItemName = null;
+                document.querySelector('.container').classList.remove('selection-mode');
             }
+        };
+        // Long press for group selection
+        li.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            if (!e.target.closest('.folder-text')) {
+                hasMoved = false;
+                li.draggable = false;
+                pressStartTime = Date.now();
+                pressCheckInterval = setInterval(() => {
+                    if (Date.now() - pressStartTime >= 1000 && !hasMoved) {
+                        li.draggable = true;
+                        startGroupSelection(node.id, li);
+                        clearInterval(pressCheckInterval);
+                    }
+                }, 100);
+            }
+        });
+        li.addEventListener('mousemove', (e) => {
+            if (!hasMoved && pressCheckInterval) {
+                hasMoved = true;
+                clearInterval(pressCheckInterval);
+                li.draggable = true;
+            }
+        });
+        li.addEventListener('mouseup', (e) => {
+            e.stopPropagation();
+            li.draggable = true;
+            if (pressCheckInterval) clearInterval(pressCheckInterval);
+            if (isSelecting) completeGroup();
+        });
+        li.addEventListener('mouseleave', (e) => {
+            e.stopPropagation();
+            li.draggable = true;
+            if (pressCheckInterval) clearInterval(pressCheckInterval);
+        });
+        li.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            if (!e.target.closest('.folder-text')) {
+                hasMoved = false;
+                li.draggable = false;
+                pressStartTime = Date.now();
+                pressCheckInterval = setInterval(() => {
+                    if (Date.now() - pressStartTime >= 1000 && !hasMoved) {
+                        li.draggable = true;
+                        startGroupSelection(node.id, li);
+                        clearInterval(pressCheckInterval);
+                    }
+                }, 100);
+            }
+        });
+        li.addEventListener('touchmove', (e) => {
+            if (!hasMoved && pressCheckInterval) {
+                hasMoved = true;
+                clearInterval(pressCheckInterval);
+                li.draggable = true;
+            }
+        });
+        li.addEventListener('touchend', (e) => {
+            e.stopPropagation();
+            li.draggable = true;
+            if (pressCheckInterval) clearInterval(pressCheckInterval);
+            if (isSelecting) completeGroup();
+        });
+    }
+    const icon = document.createElement('span');
+    if (node.type === 'group') {
+        icon.className = 'folder-icon group';
+    } else {
+        icon.className = 'folder-icon';
+        if (node.children?.length) {
+            icon.classList.add('folder-closed');
+        } else {
+            icon.classList.add('file');
         }
-    };
+        icon.onclick = () => {
+            const sublist = li.querySelector('.folder-sublist');
+            if (sublist) {
+                sublist.style.display = sublist.style.display === 'none' ? 'block' : 'none';
+                if (sublist.style.display === 'none') {
+                    icon.classList.remove('folder-open');
+                    icon.classList.add('folder-closed');
+                } else {
+                    icon.classList.remove('folder-closed');
+                    icon.classList.add('folder-open');
+                }
+            }
+        };
+    }
     const text = document.createElement('span');
     text.className = 'folder-text';
     text.contentEditable = false;
     text.textContent = node.text;
-    text.ondblclick = () => editNode(node.id);
+    if (node.type !== 'group') {
+        text.ondblclick = () => editNode(node.id);
+    }
     const btns = document.createElement('div');
     btns.className = 'folder-buttons';
-    // Removed delete button
     li.append(icon, text, btns);
-    if (node.children?.length) {
+    if (node.children?.length && node.type !== 'group') {
         const subUl = document.createElement('ul');
         subUl.className = 'folder-sublist';
         subUl.style.display = 'none';
@@ -150,6 +236,15 @@ function findNode(nodes, id) {
         const found = findNode(node.children, id);
         if (found) return found;
     }
+}
+
+function findParent(nodes, id, parent = null) {
+    for (let node of nodes) {
+        if (node.id === id) return parent;
+        const found = findParent(node.children, id, node);
+        if (found) return found;
+    }
+    return null;
 }
 
 function addChild(parentId, name = 'Idea') {
@@ -217,24 +312,7 @@ function switchTab(tab) {
     // project is current
 }
 
-function deleteNode(id) {
-    console.log('Attempting to delete node with id:', id);
-    if (id === 'root') return; // Cannot delete root
-    function remove(nodes) {
-        for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].id === id) {
-                console.log('Removing node:', nodes[i].text);
-                nodes.splice(i, 1);
-                return true;
-            }
-            if (remove(nodes[i].children)) return true;
-        }
-        return false;
-    }
-    remove(data.nodes);
-    saveData();
-    renderTree();
-}
+
 
 function moveNode(fromId, toId) {
     let fromNode = null;
@@ -260,26 +338,89 @@ function moveNode(fromId, toId) {
     }
 }
 
-function startLongPress(nodeId, li) {
-    isPressing = true;
-    pressStartTime = Date.now();
-    li.classList.add('pressing');
-    pressCheckInterval = setInterval(() => {
-        if (isPressing && Date.now() - pressStartTime >= 1500) {
-            console.log('Deleting node', nodeId);
-            deleteNode(nodeId);
-            cancelLongPress(li);
-        }
-    }, 100);
-    console.log('Long press started on', nodeId);
+function startGroupSelection(nodeId, li) {
+    isSelecting = true;
+    selectedIds = [nodeId];
+    selectionStartId = nodeId;
+    li.classList.add('selecting');
+    const tree = document.getElementById('tree');
+    tree.addEventListener('mousemove', handleMouseMove);
+    tree.addEventListener('touchmove', handleTouchMove);
+    console.log('Group selection started on', nodeId);
 }
 
-function cancelLongPress(li) {
-    isPressing = false;
-    if (pressCheckInterval) {
-        clearInterval(pressCheckInterval);
-        pressCheckInterval = null;
+function handleMouseMove(e) {
+    if (!isSelecting) return;
+    const item = e.target.closest('.folder-item');
+    if (item) updateSelection(item.dataset.id);
+}
+
+function handleTouchMove(e) {
+    if (!isSelecting) return;
+    const item = e.target.closest('.folder-item');
+    if (item) updateSelection(item.dataset.id);
+}
+
+function updateSelection(nodeId) {
+    if (!isSelecting) return;
+    const parent = findParent(data.nodes, selectionStartId);
+    const siblings = parent ? parent.children : data.nodes;
+    const startIndex = siblings.findIndex(n => n.id === selectionStartId);
+    const currentIndex = siblings.findIndex(n => n.id === nodeId);
+    if (startIndex === -1 || currentIndex === -1) return;
+    const min = Math.min(startIndex, currentIndex);
+    const max = Math.max(startIndex, currentIndex);
+    selectedIds = siblings.slice(min, max + 1).map(n => n.id);
+    document.querySelectorAll('.folder-item').forEach(item => {
+        const id = item.dataset.id;
+        if (selectedIds.includes(id)) {
+            item.classList.add('selecting');
+        } else {
+            item.classList.remove('selecting');
+        }
+    });
+}
+
+function completeGroup() {
+    if (!isSelecting || selectedIds.length < 2) {
+        cancelSelection();
+        return;
     }
-    li.classList.remove('pressing');
-    console.log('Long press cancelled');
+    const parent = findParent(data.nodes, selectedIds[0]);
+    const siblings = parent ? parent.children : data.nodes;
+    const selectedNodes = siblings.filter(n => selectedIds.includes(n.id));
+    const groupId = Date.now().toString();
+    const groupNode = {
+        id: groupId,
+        text: `Group (${selectedNodes.length} items)`,
+        type: 'group',
+        children: selectedNodes
+    };
+    const firstIndex = siblings.findIndex(n => n.id === selectedIds[0]);
+    siblings.splice(firstIndex, selectedNodes.length, groupNode);
+    saveData();
+    renderTree();
+    cancelSelection();
+}
+
+function cancelSelection() {
+    isSelecting = false;
+    selectedIds = [];
+    selectionStartId = null;
+    const tree = document.getElementById('tree');
+    tree.removeEventListener('mousemove', handleMouseMove);
+    tree.removeEventListener('touchmove', handleTouchMove);
+    document.querySelectorAll('.folder-item').forEach(item => item.classList.remove('selecting'));
+}
+
+function expandGroup(nodeId) {
+    const node = findNode(data.nodes, nodeId);
+    if (node && node.type === 'group') {
+        const parent = findParent(data.nodes, nodeId);
+        const siblings = parent ? parent.children : data.nodes;
+        const index = siblings.findIndex(n => n.id === nodeId);
+        siblings.splice(index, 1, ...node.children);
+        saveData();
+        renderTree();
+    }
 }

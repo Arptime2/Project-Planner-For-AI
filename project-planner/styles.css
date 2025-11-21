@@ -214,6 +214,7 @@ button:hover {
     transition: background-color 0.3s;
     display: block;
     overflow: hidden;
+    pointer-events: auto;
 }
 
 .folder-item.drag-over {
@@ -221,9 +222,15 @@ button:hover {
     border: 1px solid var(--accent-green);
 }
 
-.folder-item.pressing {
-    background: rgba(0, 255, 136, 0.2);
-    border: 1px solid var(--accent-green);
+.folder-item.selecting {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.folder-item.group {
+    background: rgba(128, 128, 128, 0.5);
+    box-shadow: 0 0 10px rgba(128, 128, 128, 0.5);
+    color: #ccc;
 }
 
 .folder-icon {
@@ -252,6 +259,11 @@ button:hover {
 .folder-icon.folder-open {
     background: #000088;
     box-shadow: 0 0 10px #000088, 0 0 20px #000088;
+}
+
+.folder-icon.group {
+    background: rgba(128, 128, 128, 0.5);
+    box-shadow: 0 0 10px rgba(128, 128, 128, 0.5);
 }
 
 .folder-text {
