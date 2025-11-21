@@ -228,8 +228,6 @@ button:hover {
 }
 
 .folder-item.group {
-    background: rgba(128, 128, 128, 0.5);
-    box-shadow: 0 0 10px rgba(128, 128, 128, 0.5);
     color: #ccc;
 }
 
@@ -263,7 +261,7 @@ button:hover {
 
 .folder-icon.group {
     background: rgba(128, 128, 128, 0.5);
-    box-shadow: 0 0 10px rgba(128, 128, 128, 0.5);
+    box-shadow: 0 0 15px rgba(128, 128, 128, 0.7);
 }
 
 .folder-text {
