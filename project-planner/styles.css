@@ -9,7 +9,7 @@ html, body {
     padding: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
-    overscroll-behavior: none;
+    overscroll-behavior: contain;
 }
 
 body {
@@ -74,8 +74,7 @@ body {
     height: 100vh;
     overflow: auto;
     color: var(--text-primary);
-    overscroll-behavior: none;
-    touch-action: manipulation;
+    overscroll-behavior: contain;
 }
 
 .container {

@@ -253,7 +253,10 @@ function renderItem(node, ul) {
             const dist = Math.sqrt((e.touches[0].clientX - touchStartX)**2 + (e.touches[0].clientY - touchStartY)**2);
             if (dist > 10) {
                 hasMoved = true;
-                if (!isSelecting && !isDragging) {
+                const rect = li.getBoundingClientRect();
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
+                if (touchX >= rect.left && touchX <= rect.right && touchY >= rect.top && touchY <= rect.bottom && !isSelecting && !isDragging) {
                     isDragging = true;
                     draggedElement.classList.add('dragging');
                     dragOffsetX = touchStartX - draggedElement.getBoundingClientRect().left;
