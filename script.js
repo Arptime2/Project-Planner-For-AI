@@ -11,10 +11,14 @@ function loadProjects() {
         const openBtn = document.createElement('button');
         openBtn.textContent = 'Open';
         openBtn.onclick = () => openProject(project.id);
+        const exportBtn = document.createElement('button');
+        exportBtn.textContent = 'Export';
+        exportBtn.onclick = () => exportProject(project.id, project.name);
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
         deleteBtn.onclick = () => deleteProject(project.id);
         buttonDiv.appendChild(openBtn);
+        buttonDiv.appendChild(exportBtn);
         buttonDiv.appendChild(deleteBtn);
         li.appendChild(buttonDiv);
         list.appendChild(li);
@@ -52,5 +56,58 @@ function deleteProject(id) {
     }
     loadProjects();
 }
+
+function exportProject(id, name) {
+    const data = localStorage.getItem(id);
+    if (!data) {
+        alert('Project data not found.');
+        return;
+    }
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importProject() {
+    document.getElementById('importFile').click();
+}
+
+document.getElementById('importFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file || !file.name.endsWith('.json')) {
+        alert('Please select a valid JSON file.');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const data = JSON.parse(reader.result);
+            if (!data.nodes || !Array.isArray(data.nodes)) {
+                throw new Error('Invalid project format.');
+            }
+            let name = prompt('Enter project name:', file.name.replace('.json', ''));
+            if (!name) return;
+            const projects = JSON.parse(localStorage.getItem('projects') || '[]');
+            if (projects.some(p => p.name === name)) {
+                if (!confirm('A project with this name already exists. Overwrite?')) return;
+                const existing = projects.find(p => p.name === name);
+                localStorage.removeItem(existing.id);
+                projects.splice(projects.indexOf(existing), 1);
+            }
+            const id = Date.now().toString();
+            projects.push({ id, name, data });
+            localStorage.setItem('projects', JSON.stringify(projects));
+            localStorage.setItem(id, JSON.stringify(data));
+            loadProjects();
+        } catch (err) {
+            alert('Invalid JSON file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+});
 
 window.onload = loadProjects;
