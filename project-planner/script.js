@@ -11,6 +11,14 @@ let isLongPressing = false;
 let hasMoved = false;
 let pressStartTime = 0;
 let pressCheckInterval = null;
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+let touchStartX = 0;
+let touchStartY = 0;
+let draggedElement = null;
+let selectionStartX = 0;
+let selectionStartY = 0;
 
 function handleDragStart(e) {
     if (isSelecting) {
@@ -54,6 +62,50 @@ function addEventListeners() {
 
     document.getElementById('tree').addEventListener('dragover', handleDragOver);
     document.getElementById('tree').addEventListener('drop', handleTreeDrop);
+
+    // Global touch listeners for dragging and selection
+    document.addEventListener('touchmove', (e) => {
+        if (isDragging && draggedElement) {
+            e.preventDefault();
+            const x = e.touches[0].clientX - dragOffsetX;
+            const y = e.touches[0].clientY - dragOffsetY;
+            draggedElement.style.position = 'absolute';
+            draggedElement.style.left = x + 'px';
+            draggedElement.style.top = y + 'px';
+            draggedElement.style.zIndex = '1000';
+        }
+        if (isSelecting) {
+            e.preventDefault();
+            const item = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY).closest('.folder-item');
+            if (item) updateSelection(item.dataset.id);
+            // Check threshold
+            const dist = Math.sqrt((e.touches[0].clientX - selectionStartX)**2 + (e.touches[0].clientY - selectionStartY)**2);
+            if (dist > 50) {
+                cancelSelection();
+            }
+        }
+    });
+
+    document.addEventListener('touchend', (e) => {
+        if (isDragging && draggedElement) {
+            draggedElement.style.position = '';
+            draggedElement.style.left = '';
+            draggedElement.style.top = '';
+            draggedElement.style.zIndex = '';
+            draggedElement.classList.remove('dragging');
+            // Simulate drop
+            const dropTarget = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            const targetItem = dropTarget.closest('.folder-item');
+            if (targetItem && targetItem !== draggedElement && !isSelecting) {
+                moveNode(draggedElement.dataset.id, targetItem.dataset.id);
+            }
+            isDragging = false;
+            draggedElement = null;
+        }
+        if (isSelecting) {
+            completeGroup();
+        }
+    });
 }
 
 if (!currentProject) { alert('No project selected. Please open a project first.'); window.location.href = '../main.html'; }
@@ -163,9 +215,21 @@ function renderItem(node, ul) {
                 hasMoved = false;
                 li.draggable = false;
                 pressStartTime = Date.now();
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                draggedElement = li;
+                // For drag
+                setTimeout(() => {
+                    if (!hasMoved && !isSelecting) {
+                        isDragging = true;
+                        li.classList.add('dragging');
+                        dragOffsetX = touchStartX - li.getBoundingClientRect().left;
+                        dragOffsetY = touchStartY - li.getBoundingClientRect().top;
+                    }
+                }, 200);
+                // For selection
                 pressCheckInterval = setInterval(() => {
-                    if (Date.now() - pressStartTime >= 1000 && !hasMoved) {
-                        li.draggable = true;
+                    if (Date.now() - pressStartTime >= 1000 && !hasMoved && !isDragging) {
                         startGroupSelection(node.id, li);
                         clearInterval(pressCheckInterval);
                     }
@@ -173,10 +237,13 @@ function renderItem(node, ul) {
             }
         });
         li.addEventListener('touchmove', (e) => {
-            if (!hasMoved && pressCheckInterval) {
+            const dist = Math.sqrt((e.touches[0].clientX - touchStartX)**2 + (e.touches[0].clientY - touchStartY)**2);
+            if (dist > 10) {
                 hasMoved = true;
-                clearInterval(pressCheckInterval);
-                li.draggable = true;
+                if (pressCheckInterval) {
+                    clearInterval(pressCheckInterval);
+                    li.draggable = true;
+                }
             }
         });
         li.addEventListener('touchend', (e) => {
@@ -339,13 +406,16 @@ function moveNode(fromId, toId) {
 }
 
 function startGroupSelection(nodeId, li) {
+    if (isDragging) return;
+    if (isSelecting) cancelSelection();
     isSelecting = true;
     selectedIds = [nodeId];
     selectionStartId = nodeId;
+    selectionStartX = touchStartX;
+    selectionStartY = touchStartY;
     li.classList.add('selecting');
     const tree = document.getElementById('tree');
     tree.addEventListener('mousemove', handleMouseMove);
-    tree.addEventListener('touchmove', handleTouchMove);
     console.log('Group selection started on', nodeId);
 }
 
@@ -409,7 +479,6 @@ function cancelSelection() {
     selectionStartId = null;
     const tree = document.getElementById('tree');
     tree.removeEventListener('mousemove', handleMouseMove);
-    tree.removeEventListener('touchmove', handleTouchMove);
     document.querySelectorAll('.folder-item').forEach(item => item.classList.remove('selecting'));
 }
 
