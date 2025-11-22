@@ -250,13 +250,15 @@ function renderItem(node, ul) {
             }
         });
         li.addEventListener('touchmove', (e) => {
-            const dist = Math.sqrt((e.touches[0].clientX - touchStartX)**2 + (e.touches[0].clientY - touchStartY)**2);
+            const deltaX = e.touches[0].clientX - touchStartX;
+            const deltaY = e.touches[0].clientY - touchStartY;
+            const dist = Math.sqrt(deltaX**2 + deltaY**2);
             if (dist > 10) {
                 hasMoved = true;
                 const rect = li.getBoundingClientRect();
                 const touchX = e.touches[0].clientX;
                 const touchY = e.touches[0].clientY;
-                if (touchX >= rect.left && touchX <= rect.right && touchY >= rect.top && touchY <= rect.bottom && !isSelecting && !isDragging) {
+                if (touchX >= rect.left && touchX <= rect.right && touchY >= rect.top && touchY <= rect.bottom && Math.abs(deltaY) > Math.abs(deltaX) && !isSelecting && !isDragging) {
                     isDragging = true;
                     draggedElement.classList.add('dragging');
                     dragOffsetX = touchStartX - draggedElement.getBoundingClientRect().left;
