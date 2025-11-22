@@ -201,6 +201,7 @@ document.getElementById('continueBtn').addEventListener('click', () => {
 function switchTab(tab) {
     if (tab === 'project') {
         window.location.href = '../project-planner/index.html';
+    } else if (tab === 'prompts') {
+        // already here
     }
-    // prompts is current
 }

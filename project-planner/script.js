@@ -292,8 +292,9 @@ function saveEdit(id, textEl) {
 function switchTab(tab) {
     if (tab === 'prompts') {
         window.location.href = '../prompts-viewer/index.html';
+    } else if (tab === 'project') {
+        // already here
     }
-    // project is current
 }
 
 

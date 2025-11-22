@@ -8,10 +8,10 @@
 </head>
 <body>
     <div class="tabs">
-        <button class="tab active">Project</button>
+        <button class="tab active" onclick="switchTab('project')">Project</button>
         <button class="tab" onclick="switchTab('prompts')">Prompts</button>
+        <button class="tab" onclick="window.location.href='../main.html'">Back</button>
     </div>
-    <button id="backBtn" onclick="window.location.href='../main.html'">Back to Projects</button>
     <div class="container">
         <div class="section tree-section">
             <h2>Idea Folder Structure</h2>
