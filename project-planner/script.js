@@ -1,17 +1,11 @@
 const currentProject = localStorage.getItem('currentProject');
-let draggedId = null;
-let draggedType = null;
 let currentPath = [];
 let data;
 let pendingItemName = null;
-let isSelecting = false;
 let selectedIds = [];
 let selectionStartId = null;
-let isLongPressing = false;
-let hasMoved = false;
 let pressStartTime = 0;
 let pressCheckInterval = null;
-let isDragging = false;
 let dragOffsetX = 0;
 let dragOffsetY = 0;
 let touchStartX = 0;
@@ -21,6 +15,10 @@ let selectionStartX = 0;
 let selectionStartY = 0;
 let lastTouchY = 0;
 let preventPullToRefresh = false;
+let isSelecting = false;
+let isDragging = false;
+let hasMoved = false;
+
 
 function handleDragStart(e) {
     if (isSelecting) {
@@ -53,39 +51,74 @@ function handleDragOver(e) {
 function handleDragLeave(e) { const item = e.target.closest('.folder-item'); if (item) item.classList.remove('drag-over'); }
 
 function handleTreeDrop(e) { e.preventDefault(); }
+
+function handleMouseMove(e) {
+    if (!isSelecting) return;
+    const item = document.elementFromPoint(e.clientX, e.clientY).closest('.folder-item');
+    if (item) updateSelection(item.dataset.id);
+}
+
+function handleTouchMove(e) {
+    if (!isSelecting) return;
+    e.preventDefault();
+    const item = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY).closest('.folder-item');
+    if (item) updateSelection(item.dataset.id);
+}
+
 function addEventListeners() {
     const isMobile = 'ontouchstart' in window;
-    document.querySelectorAll('.folder-item').forEach(item => {
-        if (isMobile) {
-            item.draggable = false;
-        } else {
+    if (!isMobile) {
+        document.querySelectorAll('.folder-item').forEach(item => {
             item.draggable = true;
             item.addEventListener('dragstart', handleDragStart);
             item.addEventListener('dragover', handleDragOver);
             item.addEventListener('dragleave', handleDragLeave);
             item.addEventListener('drop', handleDrop);
-        }
-    });
-
-    if (!isMobile) {
+        });
         document.getElementById('tree').addEventListener('dragover', handleDragOver);
         document.getElementById('tree').addEventListener('drop', handleTreeDrop);
     }
 
-    // Prevent pull-to-refresh
+    // Global touch handling
     document.addEventListener('touchstart', (e) => {
         if (e.touches.length !== 1) return;
         lastTouchY = e.touches[0].clientY;
         preventPullToRefresh = window.pageYOffset === 0;
+        const target = e.target.closest('.folder-item');
+        if (target && !e.target.closest('.folder-text')) {
+            draggedElement = target;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchState = 'potential_drag';
+            pressStartTime = Date.now();
+                pressCheckInterval = setInterval(() => {
+                    if (Date.now() - pressStartTime >= 1000 && !isDragging) {
+                        startGroupSelection(node.id, li);
+                        clearInterval(pressCheckInterval);
+                    }
+                }, 100);
+        } else {
+            touchState = 'none';
+        }
     }, { passive: false });
 
-    // Global touch listeners for dragging and selection
     document.addEventListener('touchmove', (e) => {
         var touchY = e.touches[0].clientY;
         var touchYDelta = touchY - lastTouchY;
         lastTouchY = touchY;
 
-        if (isDragging && draggedElement) {
+        if (touchState === 'potential_drag') {
+            const deltaX = e.touches[0].clientX - touchStartX;
+            const deltaY = e.touches[0].clientY - touchStartY;
+            const dist = Math.sqrt(deltaX**2 + deltaY**2);
+            if (dist > 5) {
+                touchState = 'dragging';
+                draggedElement.classList.add('dragging');
+                dragOffsetX = touchStartX - draggedElement.getBoundingClientRect().left;
+                dragOffsetY = touchStartY - draggedElement.getBoundingClientRect().top;
+                clearInterval(pressCheckInterval);
+            }
+        } else if (touchState === 'dragging') {
             e.preventDefault();
             const x = e.touches[0].clientX - dragOffsetX;
             const y = e.touches[0].clientY - dragOffsetY;
@@ -93,41 +126,43 @@ function addEventListeners() {
             draggedElement.style.left = x + 'px';
             draggedElement.style.top = y + 'px';
             draggedElement.style.zIndex = '1000';
-        } else if (isSelecting) {
+        } else if (touchState === 'selecting') {
             e.preventDefault();
             const item = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY).closest('.folder-item');
             if (item) updateSelection(item.dataset.id);
-            // Check threshold
             const dist = Math.sqrt((e.touches[0].clientX - selectionStartX)**2 + (e.touches[0].clientY - selectionStartY)**2);
             if (dist > 50) {
                 cancelSelection();
+                touchState = 'none';
             }
         } else if (preventPullToRefresh && touchYDelta > 0) {
             e.preventDefault();
             preventPullToRefresh = false;
         }
-    });
+    }, { passive: false });
 
     document.addEventListener('touchend', (e) => {
-        if (isDragging && draggedElement) {
+        if (touchState === 'dragging') {
             draggedElement.style.position = '';
             draggedElement.style.left = '';
             draggedElement.style.top = '';
             draggedElement.style.zIndex = '';
             draggedElement.classList.remove('dragging');
-            // Simulate drop
             const dropTarget = document.elementFromPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
             const targetItem = dropTarget.closest('.folder-item');
-            if (targetItem && targetItem !== draggedElement && !isSelecting) {
+            if (targetItem && targetItem !== draggedElement) {
                 moveNode(draggedElement.dataset.id, targetItem.dataset.id);
             }
-            isDragging = false;
+            touchState = 'none';
             draggedElement = null;
-        }
-        if (isSelecting) {
+        } else if (touchState === 'selecting') {
             completeGroup();
+            touchState = 'none';
         }
-    });
+        if (pressCheckInterval) clearInterval(pressCheckInterval);
+    }, { passive: false });
+
+
 }
 
 if (!currentProject) { alert('No project selected. Please open a project first.'); window.location.href = '../main.html'; }
@@ -197,52 +232,18 @@ function renderItem(node, ul) {
                 document.querySelector('.container').classList.remove('selection-mode');
             }
         };
-        // Long press for group selection
-        li.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-            if (!e.target.closest('.folder-text')) {
-                hasMoved = false;
-                li.draggable = false;
-                pressStartTime = Date.now();
-                pressCheckInterval = setInterval(() => {
-                    if (Date.now() - pressStartTime >= 1000 && !hasMoved) {
-                        li.draggable = true;
-                        startGroupSelection(node.id, li);
-                        clearInterval(pressCheckInterval);
-                    }
-                }, 100);
-            }
-        });
-        li.addEventListener('mousemove', (e) => {
-            if (!hasMoved && pressCheckInterval) {
-                hasMoved = true;
-                clearInterval(pressCheckInterval);
-                li.draggable = true;
-            }
-        });
-        li.addEventListener('mouseup', (e) => {
-            e.stopPropagation();
-            li.draggable = true;
-            if (pressCheckInterval) clearInterval(pressCheckInterval);
-            if (isSelecting) completeGroup();
-        });
-        li.addEventListener('mouseleave', (e) => {
-            e.stopPropagation();
-            li.draggable = true;
-            if (pressCheckInterval) clearInterval(pressCheckInterval);
-        });
+        // Touch for mobile
         li.addEventListener('touchstart', (e) => {
             e.stopPropagation();
             if (!e.target.closest('.folder-text')) {
                 hasMoved = false;
-                li.draggable = false;
+                isDragging = false;
                 pressStartTime = Date.now();
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 draggedElement = li;
-                // For selection
                 pressCheckInterval = setInterval(() => {
-                    if (Date.now() - pressStartTime >= 1000 && !hasMoved && !isDragging) {
+                    if (Date.now() - pressStartTime >= 1000 && !isDragging) {
                         startGroupSelection(node.id, li);
                         clearInterval(pressCheckInterval);
                     }
@@ -255,24 +256,43 @@ function renderItem(node, ul) {
             const dist = Math.sqrt(deltaX**2 + deltaY**2);
             if (dist > 10) {
                 hasMoved = true;
-                const rect = li.getBoundingClientRect();
-                const touchX = e.touches[0].clientX;
-                const touchY = e.touches[0].clientY;
-                if (touchX >= rect.left && touchX <= rect.right && touchY >= rect.top && touchY <= rect.bottom && Math.abs(deltaY) > Math.abs(deltaX) && !isSelecting && !isDragging) {
+                if (Math.abs(deltaY) > Math.abs(deltaX) && !isSelecting) {
                     isDragging = true;
                     draggedElement.classList.add('dragging');
                     dragOffsetX = touchStartX - draggedElement.getBoundingClientRect().left;
                     dragOffsetY = touchStartY - draggedElement.getBoundingClientRect().top;
-                }
-                if (pressCheckInterval) {
-                    clearInterval(pressCheckInterval);
-                    li.draggable = true;
+                    if (pressCheckInterval) {
+                        clearInterval(pressCheckInterval);
+                    }
                 }
             }
         });
         li.addEventListener('touchend', (e) => {
             e.stopPropagation();
-            li.draggable = true;
+            if (pressCheckInterval) clearInterval(pressCheckInterval);
+            if (isSelecting) completeGroup();
+        });
+        // Mouse for PC
+        li.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            if (!e.target.closest('.folder-text')) {
+                hasMoved = false;
+                pressStartTime = Date.now();
+                pressCheckInterval = setInterval(() => {
+                    if (Date.now() - pressStartTime >= 1000 && !isDragging) {
+                        startGroupSelection(node.id, li);
+                        clearInterval(pressCheckInterval);
+                    }
+                }, 100);
+            }
+        });
+        li.addEventListener('mousemove', (e) => {
+            if (!hasMoved) {
+                hasMoved = true;
+            }
+        });
+        li.addEventListener('mouseup', (e) => {
+            e.stopPropagation();
             if (pressCheckInterval) clearInterval(pressCheckInterval);
             if (isSelecting) completeGroup();
         });
@@ -431,29 +451,18 @@ function moveNode(fromId, toId) {
 
 function startGroupSelection(nodeId, li) {
     if (isDragging) return;
-    if (isSelecting) cancelSelection();
+    cancelSelection();
     isSelecting = true;
     selectedIds = [nodeId];
     selectionStartId = nodeId;
     selectionStartX = touchStartX;
     selectionStartY = touchStartY;
     li.classList.add('selecting');
-    const tree = document.getElementById('tree');
-    tree.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mousemove', handleMouseMove);
     console.log('Group selection started on', nodeId);
 }
 
-function handleMouseMove(e) {
-    if (!isSelecting) return;
-    const item = e.target.closest('.folder-item');
-    if (item) updateSelection(item.dataset.id);
-}
 
-function handleTouchMove(e) {
-    if (!isSelecting) return;
-    const item = e.target.closest('.folder-item');
-    if (item) updateSelection(item.dataset.id);
-}
 
 function updateSelection(nodeId) {
     if (!isSelecting) return;
@@ -476,7 +485,7 @@ function updateSelection(nodeId) {
 }
 
 function completeGroup() {
-    if (!isSelecting || selectedIds.length < 2) {
+    if (!isSelecting) {
         cancelSelection();
         return;
     }
@@ -501,8 +510,7 @@ function cancelSelection() {
     isSelecting = false;
     selectedIds = [];
     selectionStartId = null;
-    const tree = document.getElementById('tree');
-    tree.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mousemove', handleMouseMove);
     document.querySelectorAll('.folder-item').forEach(item => item.classList.remove('selecting'));
 }
 

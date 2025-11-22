@@ -229,6 +229,7 @@ button:hover {
     touch-action: none;
     position: absolute;
     z-index: 1000;
+    pointer-events: none;
 }
 
 .folder-item.selecting {
