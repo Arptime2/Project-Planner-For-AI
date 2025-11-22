@@ -171,6 +171,14 @@ h2 {
     cursor: pointer;
 }
 
+.folder-item.selected {
+    background: rgba(255, 255, 136, 0.3);
+}
+
+.folder-item.moving {
+    border: 2px solid #ff0088;
+}
+
 .selection-mode .folder-item:hover {
     background: rgba(0, 255, 136, 0.02);
     border: 1px solid rgba(0, 255, 136, 0.1);
