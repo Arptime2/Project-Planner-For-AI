@@ -234,7 +234,6 @@ function renderItem(node, ul) {
         li.addEventListener('touchstart', (e) => {
             e.stopPropagation();
             if (!e.target.closest('.folder-text')) {
-                e.preventDefault(); // Prevent scroll during potential drag/select
                 hasMoved = false;
                 li.draggable = false;
                 pressStartTime = Date.now();
@@ -253,7 +252,6 @@ function renderItem(node, ul) {
         li.addEventListener('touchmove', (e) => {
             const dist = Math.sqrt((e.touches[0].clientX - touchStartX)**2 + (e.touches[0].clientY - touchStartY)**2);
             if (dist > 10) {
-                e.preventDefault(); // Prevent scroll once moved
                 hasMoved = true;
                 if (!isSelecting && !isDragging) {
                     isDragging = true;
