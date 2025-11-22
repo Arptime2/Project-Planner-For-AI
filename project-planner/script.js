@@ -19,6 +19,8 @@ let touchStartY = 0;
 let draggedElement = null;
 let selectionStartX = 0;
 let selectionStartY = 0;
+let lastTouchY = 0;
+let preventPullToRefresh = false;
 
 function handleDragStart(e) {
     if (isSelecting) {
@@ -70,8 +72,19 @@ function addEventListeners() {
         document.getElementById('tree').addEventListener('drop', handleTreeDrop);
     }
 
+    // Prevent pull-to-refresh
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        lastTouchY = e.touches[0].clientY;
+        preventPullToRefresh = window.pageYOffset === 0;
+    }, { passive: false });
+
     // Global touch listeners for dragging and selection
     document.addEventListener('touchmove', (e) => {
+        var touchY = e.touches[0].clientY;
+        var touchYDelta = touchY - lastTouchY;
+        lastTouchY = touchY;
+
         if (isDragging && draggedElement) {
             e.preventDefault();
             const x = e.touches[0].clientX - dragOffsetX;
@@ -80,8 +93,7 @@ function addEventListeners() {
             draggedElement.style.left = x + 'px';
             draggedElement.style.top = y + 'px';
             draggedElement.style.zIndex = '1000';
-        }
-        if (isSelecting) {
+        } else if (isSelecting) {
             e.preventDefault();
             const item = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY).closest('.folder-item');
             if (item) updateSelection(item.dataset.id);
@@ -90,6 +102,9 @@ function addEventListeners() {
             if (dist > 50) {
                 cancelSelection();
             }
+        } else if (preventPullToRefresh && touchYDelta > 0) {
+            e.preventDefault();
+            preventPullToRefresh = false;
         }
     });
 
