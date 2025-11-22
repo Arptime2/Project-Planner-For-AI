@@ -16,27 +16,31 @@
 
 
 function addEventListeners() {
-    document.getElementById('selectModeBtn').addEventListener('click', () => {
+    const selectModeBtn = document.getElementById('selectModeBtn');
+    selectModeBtn.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+    selectModeBtn.addEventListener('click', () => {
         isSelectMode = !isSelectMode;
         if (isSelectMode) {
-            document.getElementById('selectModeBtn').textContent = 'Exit Select Mode';
+            selectModeBtn.textContent = 'Exit Select Mode';
             document.getElementById('groupSelectedBtn').style.display = 'inline';
             selectedForMove = null;
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
         } else {
-            document.getElementById('selectModeBtn').textContent = 'Enter Select Mode';
+            selectModeBtn.textContent = 'Enter Select Mode';
             document.getElementById('groupSelectedBtn').style.display = 'none';
             selectedIds = [];
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
         }
     });
 
-    document.getElementById('groupSelectedBtn').addEventListener('click', () => {
+    const groupSelectedBtn = document.getElementById('groupSelectedBtn');
+    groupSelectedBtn.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+    groupSelectedBtn.addEventListener('click', () => {
         if (selectedIds.length > 0) {
             completeGroup();
             isSelectMode = false;
-            document.getElementById('selectModeBtn').textContent = 'Enter Select Mode';
-            document.getElementById('groupSelectedBtn').style.display = 'none';
+            selectModeBtn.textContent = 'Enter Select Mode';
+            groupSelectedBtn.style.display = 'none';
         }
     });
 
