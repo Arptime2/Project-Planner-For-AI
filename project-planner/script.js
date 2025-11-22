@@ -52,16 +52,23 @@ function handleDragLeave(e) { const item = e.target.closest('.folder-item'); if 
 
 function handleTreeDrop(e) { e.preventDefault(); }
 function addEventListeners() {
+    const isMobile = 'ontouchstart' in window;
     document.querySelectorAll('.folder-item').forEach(item => {
-        item.draggable = true;
-        item.addEventListener('dragstart', handleDragStart);
-        item.addEventListener('dragover', handleDragOver);
-        item.addEventListener('dragleave', handleDragLeave);
-        item.addEventListener('drop', handleDrop);
+        if (isMobile) {
+            item.draggable = false;
+        } else {
+            item.draggable = true;
+            item.addEventListener('dragstart', handleDragStart);
+            item.addEventListener('dragover', handleDragOver);
+            item.addEventListener('dragleave', handleDragLeave);
+            item.addEventListener('drop', handleDrop);
+        }
     });
 
-    document.getElementById('tree').addEventListener('dragover', handleDragOver);
-    document.getElementById('tree').addEventListener('drop', handleTreeDrop);
+    if (!isMobile) {
+        document.getElementById('tree').addEventListener('dragover', handleDragOver);
+        document.getElementById('tree').addEventListener('drop', handleTreeDrop);
+    }
 
     // Global touch listeners for dragging and selection
     document.addEventListener('touchmove', (e) => {
@@ -212,21 +219,13 @@ function renderItem(node, ul) {
         li.addEventListener('touchstart', (e) => {
             e.stopPropagation();
             if (!e.target.closest('.folder-text')) {
+                e.preventDefault(); // Prevent scroll during potential drag/select
                 hasMoved = false;
                 li.draggable = false;
                 pressStartTime = Date.now();
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 draggedElement = li;
-                // For drag
-                setTimeout(() => {
-                    if (!hasMoved && !isSelecting) {
-                        isDragging = true;
-                        li.classList.add('dragging');
-                        dragOffsetX = touchStartX - li.getBoundingClientRect().left;
-                        dragOffsetY = touchStartY - li.getBoundingClientRect().top;
-                    }
-                }, 200);
                 // For selection
                 pressCheckInterval = setInterval(() => {
                     if (Date.now() - pressStartTime >= 1000 && !hasMoved && !isDragging) {
@@ -239,7 +238,14 @@ function renderItem(node, ul) {
         li.addEventListener('touchmove', (e) => {
             const dist = Math.sqrt((e.touches[0].clientX - touchStartX)**2 + (e.touches[0].clientY - touchStartY)**2);
             if (dist > 10) {
+                e.preventDefault(); // Prevent scroll once moved
                 hasMoved = true;
+                if (!isSelecting && !isDragging) {
+                    isDragging = true;
+                    draggedElement.classList.add('dragging');
+                    dragOffsetX = touchStartX - draggedElement.getBoundingClientRect().left;
+                    dragOffsetY = touchStartY - draggedElement.getBoundingClientRect().top;
+                }
                 if (pressCheckInterval) {
                     clearInterval(pressCheckInterval);
                     li.draggable = true;
