@@ -67,6 +67,11 @@ else {
     data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": []}');
     renderTree();
     addEventListeners();
+    // Move fixed elements to body to avoid stacking context issues
+    const h2 = document.querySelector('h2');
+    const addItem = document.querySelector('.add-item-section');
+    document.body.appendChild(h2);
+    document.body.appendChild(addItem);
 }
 
 document.getElementById('submitNewItem').onclick = () => {
@@ -389,3 +394,12 @@ document.getElementById('exportProjectBtn').onclick = () => {
     a.click();
     URL.revokeObjectURL(url);
 };
+
+function updateFixedWidths() {
+    const clientWidth = document.documentElement.clientWidth;
+    const fixedWidth = clientWidth - 100;
+    document.querySelector('.add-item-section').style.width = fixedWidth + 'px';
+}
+
+updateFixedWidths();
+window.addEventListener('resize', updateFixedWidths);
