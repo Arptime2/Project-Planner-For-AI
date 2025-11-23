@@ -159,6 +159,7 @@ h2 {
     box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4), 0 0 30px rgba(0, 255, 136, 0.2);
     backdrop-filter: blur(15px);
     transition: transform 0.2s, box-shadow 0.3s;
+    height: 2em;
 }
 
 .add-item-section input {
@@ -219,6 +220,13 @@ button:hover {
 .add-item-section button {
     flex: 1;
     margin: 5px;
+    height: 2em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .folder-list {
@@ -422,4 +430,27 @@ button:hover {
 .delete-btn:hover {
     transform: translateY(-4px);
     box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6), 0 0 35px rgba(255, 0, 0, 0.3) !important;
+}
+
+@media (max-width: 600px) {
+    .add-item-section button {
+        padding: 4px 6px;
+        font-size: 12px;
+        margin: 5px;
+    }
+    .add-item-section input {
+        padding: 4px 8px;
+    }
+}
+
+@media (max-width: 400px) {
+    .add-item-section button {
+        padding: 2px 4px;
+        font-size: 10px;
+        margin: 2px;
+    }
+    .add-item-section input {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
 }

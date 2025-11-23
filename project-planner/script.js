@@ -17,7 +17,6 @@
 
 function addEventListeners() {
     const selectModeBtn = document.getElementById('selectModeBtn');
-    selectModeBtn.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
     selectModeBtn.addEventListener('click', () => {
         isSelectMode = !isSelectMode;
         if (isSelectMode) {
@@ -34,7 +33,6 @@ function addEventListeners() {
     });
 
     const groupSelectedBtn = document.getElementById('groupSelectedBtn');
-    groupSelectedBtn.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
     groupSelectedBtn.addEventListener('click', () => {
         if (selectedIds.length > 0) {
             completeGroup();
@@ -114,7 +112,6 @@ function renderTree() {
             }
         }
     });
-    addEventListeners();
 }
 
 
@@ -382,18 +379,7 @@ function expandGroup(nodeId) {
     }
 }
 
-document.getElementById('exportProjectBtn').onclick = () => {
-    const projects = JSON.parse(localStorage.getItem('projects') || '[]');
-    const project = projects.find(p => p.id === currentProject);
-    const name = project ? project.name : currentProject;
-    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${name}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-};
+
 
 function updateFixedWidths() {
     const clientWidth = document.documentElement.clientWidth;
