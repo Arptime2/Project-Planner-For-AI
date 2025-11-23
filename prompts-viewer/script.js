@@ -39,13 +39,14 @@ function generatePrompts(nodes, prompts = [], prefix = '') {
         const fullName = prefix ? `${prefix} > ${node.text}` : node.text;
         let prompt;
         if (prefix === '') {
-            prompt = `Create a root-level README.md for '${fullName}' with project overview and ideas. Add MD files for each tree node at level 0, containing general plans and brainstorming notes.`;
+            prompt = `Create a README.md for '${fullName}' with project overview and ideas. Add MD files with general ideas about the project and how to write good and modular code.`;
+            prompt += ' Ensure the implementation follows best practices, handles edge cases, and includes comments for clarity.';
         } else if (node.children && node.children.length > 0) {
-            prompt = `For '${fullName}', create MD plan files outlining sub-components. Generate prototype files (e.g., .js, .html) with function stubs and folder structure, but no real logic code. Plan structure and create files as structure.`;
+            prompt = `For '${fullName}', create function prototypes and empty files/folders. Plan in md files: structure and create files as structure, but no real logic code.`;
+            prompt += ' Ensure the implementation follows best practices, handles edge cases, and includes comments for clarity.';
         } else {
-            prompt = `For '${fullName}', mark as read and delete the used plan MD files. Use the prototype functions and files, and fill the correct ones with the correct logic code.`;
+            prompt = `For '${fullName}', use the prototype functions and files, and fill the correct ones with the specific logic code. Ensure the implementation follows best practices.`;
         }
-        prompt += ' Ensure the implementation follows best practices, handles edge cases, and includes comments for clarity.';
         prompts.push(prompt);
         promptNodes.push(fullName);
         if (node.children && node.children.length > 0) {
