@@ -107,45 +107,6 @@ function saveData() {
     }
 }
 
-function renderTree() {
-    try {
-        const tree = document.getElementById('tree');
-        if (!tree) return;
-        // collect expanded
-        const expanded = new Set();
-        document.querySelectorAll('.folder-sublist[style*="display: block"]').forEach(sublist => {
-            const li = sublist.closest('.folder-item');
-            if (li) expanded.add(li.dataset.id);
-        });
-        tree.innerHTML = '';
-        const ul = document.createElement('ul');
-        ul.className = 'folder-list';
-        tree.appendChild(ul);
-        data.nodes.forEach(item => renderItem(item, ul));
-        // restore expanded
-        expanded.forEach(id => {
-            const node = findNode(data.nodes, id);
-            if (node && node.children && node.children.length > 0) {
-                const li = document.querySelector(`.folder-item[data-id="${id}"]`);
-                if (li) {
-                    const sublist = li.querySelector('.folder-sublist');
-                    if (sublist) sublist.style.display = 'block';
-                    const icon = li.querySelector('.folder-icon');
-                    if (icon) {
-                        icon.classList.remove('folder-closed');
-                        icon.classList.add('folder-open');
-                    }
-                }
-            }
-        });
-    } catch (e) {
-        console.error('Error rendering tree:', e);
-        alert('Error rendering project tree. Please refresh the page.');
-    }
-}
-
-
-
 function renderItem(node, ul) {
     const li = document.createElement('li');
     li.className = 'folder-item';
@@ -231,14 +192,14 @@ function renderItem(node, ul) {
             }
         };
     }
-     const text = document.createElement('span');
-     text.className = 'folder-text';
-     text.contentEditable = false;
-     text.textContent = node.text;
-     if (node.type !== 'group' && !isMobile) {
-         text.ondblclick = () => editNode(node.id);
-     }
-     li.append(icon, text);
+    const text = document.createElement('span');
+    text.className = 'folder-text';
+    text.contentEditable = false;
+    text.textContent = node.text;
+    if (node.type !== 'group' && !isMobile) {
+        text.ondblclick = () => editNode(node.id);
+    }
+    li.append(icon, text);
     if (node.children?.length && node.type !== 'group') {
         const subUl = document.createElement('ul');
         subUl.className = 'folder-sublist';
@@ -249,90 +210,43 @@ function renderItem(node, ul) {
     ul.appendChild(li);
 }
 
-function findNode(nodes, id) {
-    for (let node of nodes) {
-        if (node.id === id) return node;
-        const found = findNode(node.children, id);
-        if (found) return found;
-    }
-}
-
-function findParent(nodes, id, parent = null) {
-    for (let node of nodes) {
-        if (node.id === id) return parent;
-        const found = findParent(node.children, id, node);
-        if (found) return found;
-    }
-    return null;
-}
-
-function addChild(parentId, name = 'Idea') {
-    const parent = findNode(data.nodes, parentId);
-    if (parent) {
-        const newNode = { id: Date.now().toString(), text: name, children: [] };
-        parent.children.push(newNode);
-        if (saveData()) {
-            renderTree();
-        }
-    }
-}
-
-
-
-function editNode(id) {
-    const node = findNode(data.nodes, id);
-    if (node) {
-        const li = document.querySelector(`.folder-item[data-id="${id}"]`);
-        if (li) {
-            li.classList.add('editing');
-            const textEl = li.querySelector('.folder-text');
-            if (textEl) {
-                textEl.contentEditable = true;
-                textEl.focus();
-                // Select all text
-                const range = document.createRange();
-                range.selectNodeContents(textEl);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-                textEl.onblur = () => saveEdit(id, textEl);
-                textEl.onkeydown = (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        textEl.blur();
+function renderTree() {
+    try {
+        const tree = document.getElementById('tree');
+        if (!tree) return;
+        // collect expanded
+        const expanded = new Set();
+        document.querySelectorAll('.folder-sublist[style*="display: block"]').forEach(sublist => {
+            const li = sublist.closest('.folder-item');
+            if (li) expanded.add(li.dataset.id);
+        });
+        tree.innerHTML = '';
+        const ul = document.createElement('ul');
+        ul.className = 'folder-list';
+        tree.appendChild(ul);
+        data.nodes.forEach(item => renderItem(item, ul));
+        // restore expanded
+        for (const id of expanded) {
+            const node = findNode(data.nodes, id);
+            if (node && node.children && node.children.length > 0) {
+                const li = document.querySelector(`.folder-item[data-id="${id}"]`);
+                if (li) {
+                    const sublist = li.querySelector('.folder-sublist');
+                    if (sublist) sublist.style.display = 'block';
+                    const icon = li.querySelector('.folder-icon');
+                    if (icon) {
+                        icon.classList.remove('folder-closed');
+                        icon.classList.add('folder-open');
                     }
-                };
+                }
             }
         }
+    } catch (e) {
+        console.error('Error rendering tree:', e);
+        alert('Error rendering project tree. Please refresh the page.');
     }
 }
 
-function saveEdit(id, textEl) {
-    const li = textEl.closest('.folder-item');
-    if (li) li.classList.remove('editing');
-    const newText = textEl.textContent.trim();
-    if (newText) {
-        const node = findNode(data.nodes, id);
-        if (node) {
-            node.text = newText;
-            if (saveData()) {
-                renderTree();
-            }
-        }
-    } else {
-        // Delete the item if edited to empty
-        const parent = findParent(data.nodes, id);
-        const siblings = parent ? parent.children : data.nodes;
-        const index = siblings.findIndex(n => n.id === id);
-        if (index !== -1) {
-            siblings.splice(index, 1);
-            if (saveData()) {
-                renderTree();
-            }
-        }
-    }
-    textEl.contentEditable = false;
-}
 
 function switchTab(tab) {
     if (tab === 'prompts') {
@@ -341,97 +255,6 @@ function switchTab(tab) {
         // already here
     }
 }
-
-
-
-function moveNode(fromId, toId) {
-    let fromNode = null;
-    function remove(nodes) {
-        for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].id === fromId) { fromNode = nodes.splice(i, 1)[0]; return true; }
-            if (remove(nodes[i].children)) return true;
-        }
-        return false;
-    }
-    remove(data.nodes);
-    if (fromNode) {
-        function add(nodes) {
-            for (let node of nodes) {
-                if (node.id === toId) { node.children.push(fromNode); return true; }
-                if (add(node.children)) return true;
-            }
-            return false;
-        }
-        add(data.nodes);
-        if (saveData()) {
-            renderTree();
-        }
-    }
-}
-
-function completeGroup() {
-    if (selectedIds.length === 0) return;
-    // Find the common parent
-    let commonParent = null;
-    let minIndex = Infinity;
-    for (const id of selectedIds) {
-        const parent = findParent(data.nodes, id);
-        const siblings = parent ? parent.children : data.nodes;
-        const index = siblings.findIndex(n => n.id === id);
-        if (!commonParent || parent !== commonParent) {
-            // For simplicity, assume all selected are at the same level
-            commonParent = parent;
-}
-        if (index < minIndex) minIndex = index;
-    }
-    const siblings = commonParent ? commonParent.children : data.nodes;
-    const selectedNodes = [];
-    const indices = [];
-    for (const id of selectedIds) {
-        const index = siblings.findIndex(n => n.id === id);
-        if (index !== -1) {
-            selectedNodes.push(siblings[index]);
-            indices.push(index);
-        }
-    }
-    indices.sort((a, b) => b - a); // Remove from end
-    for (const index of indices) {
-        siblings.splice(index, 1);
-    }
-    const groupId = Date.now().toString();
-    const groupNode = {
-        id: groupId,
-        text: `Group (${selectedNodes.length} items)`,
-        type: 'group',
-        children: selectedNodes
-    };
-    siblings.splice(minIndex, 0, groupNode);
-    if (saveData()) {
-        renderTree();
-    }
-    selectedIds = [];
-}
-
-function expandGroup(nodeId) {
-    const node = findNode(data.nodes, nodeId);
-    if (node && node.type === 'group') {
-        if (node.children && node.children.length > 0) {
-            const parent = findParent(data.nodes, nodeId);
-            const siblings = parent ? parent.children : data.nodes;
-            const index = siblings.findIndex(n => n.id === nodeId);
-            siblings.splice(index, 1, ...node.children);
-            if (saveData()) {
-                renderTree();
-            }
-        } else {
-            alert('Group is empty and cannot be expanded.');
-        }
-    }
-}
-    }
-}
-
-
 
 function updateFixedWidths() {
     const clientWidth = document.documentElement.clientWidth;
