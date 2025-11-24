@@ -88,12 +88,7 @@ document.getElementById('submitNewItem').onclick = () => {
     }
 };
 
-document.getElementById('tree').addEventListener('click', (e) => {
-    if (pendingItemName && !e.target.closest('.folder-item')) {
-        pendingItemName = null;
-        document.querySelector('.container').classList.remove('selection-mode');
-    }
-});
+
 
 function saveData() {
     try {
@@ -201,8 +196,13 @@ function renderItem(node, ul) {
                     selectedForMove = null;
                     document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
                 } else {
-                    selectedForMove = node.id;
-                    li.classList.add('moving');
+                    // Prevent moving root items to avoid deleting the entire project
+                    if (!findParent(data.nodes, node.id)) {
+                        selectedForMove = null;
+                    } else {
+                        selectedForMove = node.id;
+                        li.classList.add('moving');
+                    }
                 }
             }
         }
@@ -320,8 +320,16 @@ function saveEdit(id, textEl) {
             }
         }
     } else {
-        // If empty, revert or delete?
-        renderTree();
+        // Delete the item if edited to empty
+        const parent = findParent(data.nodes, id);
+        const siblings = parent ? parent.children : data.nodes;
+        const index = siblings.findIndex(n => n.id === id);
+        if (index !== -1) {
+            siblings.splice(index, 1);
+            if (saveData()) {
+                renderTree();
+            }
+        }
     }
     textEl.contentEditable = false;
 }
@@ -407,13 +415,19 @@ function completeGroup() {
 function expandGroup(nodeId) {
     const node = findNode(data.nodes, nodeId);
     if (node && node.type === 'group') {
-        const parent = findParent(data.nodes, nodeId);
-        const siblings = parent ? parent.children : data.nodes;
-        const index = siblings.findIndex(n => n.id === nodeId);
-        siblings.splice(index, 1, ...node.children);
-        if (saveData()) {
-            renderTree();
+        if (node.children && node.children.length > 0) {
+            const parent = findParent(data.nodes, nodeId);
+            const siblings = parent ? parent.children : data.nodes;
+            const index = siblings.findIndex(n => n.id === nodeId);
+            siblings.splice(index, 1, ...node.children);
+            if (saveData()) {
+                renderTree();
+            }
+        } else {
+            alert('Group is empty and cannot be expanded.');
         }
+    }
+}
     }
 }
 
