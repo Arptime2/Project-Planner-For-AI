@@ -100,7 +100,7 @@ body {
     width: calc(100% - 100px);
     margin-left: 100px;
     overflow-x: auto;
-    touch-action: pan-y;
+    touch-action: pan-x pan-y;
 }
 
 
