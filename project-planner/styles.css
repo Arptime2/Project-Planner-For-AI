@@ -307,9 +307,10 @@ button:hover {
 .folder-text {
     cursor: text;
     color: var(--text-primary);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+    overflow: visible;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
     max-width: calc(100% - 60px);
     display: inline-block;
 }

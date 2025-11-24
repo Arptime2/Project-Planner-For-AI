@@ -81,37 +81,57 @@ document.getElementById('submitNewItem').onclick = () => {
     }
 };
 
-function saveData() { localStorage.setItem(currentProject, JSON.stringify(data)); }
+function saveData() {
+    try {
+        const jsonData = JSON.stringify(data);
+        if (jsonData.length > 4 * 1024 * 1024) { // 4MB limit check
+            alert('Project data is too large. Please reduce the number of items.');
+            return false;
+        }
+        localStorage.setItem(currentProject, jsonData);
+        return true;
+    } catch (e) {
+        console.error('Failed to save data:', e);
+        alert('Failed to save project data. Please check storage space.');
+        return false;
+    }
+}
 
 function renderTree() {
-    const tree = document.getElementById('tree');
-    // collect expanded
-    const expanded = new Set();
-    document.querySelectorAll('.folder-sublist[style*="display: block"]').forEach(sublist => {
-        const li = sublist.closest('.folder-item');
-        if (li) expanded.add(li.dataset.id);
-    });
-    tree.innerHTML = '';
-    const ul = document.createElement('ul');
-    ul.className = 'folder-list';
-    tree.appendChild(ul);
-    data.nodes.forEach(item => renderItem(item, ul));
-    // restore expanded
-    expanded.forEach(id => {
-        const node = findNode(data.nodes, id);
-        if (node && node.children && node.children.length > 0) {
-            const li = document.querySelector(`.folder-item[data-id="${id}"]`);
-            if (li) {
-                const sublist = li.querySelector('.folder-sublist');
-                if (sublist) sublist.style.display = 'block';
-                const icon = li.querySelector('.folder-icon');
-                if (icon) {
-                    icon.classList.remove('folder-closed');
-                    icon.classList.add('folder-open');
+    try {
+        const tree = document.getElementById('tree');
+        if (!tree) return;
+        // collect expanded
+        const expanded = new Set();
+        document.querySelectorAll('.folder-sublist[style*="display: block"]').forEach(sublist => {
+            const li = sublist.closest('.folder-item');
+            if (li) expanded.add(li.dataset.id);
+        });
+        tree.innerHTML = '';
+        const ul = document.createElement('ul');
+        ul.className = 'folder-list';
+        tree.appendChild(ul);
+        data.nodes.forEach(item => renderItem(item, ul));
+        // restore expanded
+        expanded.forEach(id => {
+            const node = findNode(data.nodes, id);
+            if (node && node.children && node.children.length > 0) {
+                const li = document.querySelector(`.folder-item[data-id="${id}"]`);
+                if (li) {
+                    const sublist = li.querySelector('.folder-sublist');
+                    if (sublist) sublist.style.display = 'block';
+                    const icon = li.querySelector('.folder-icon');
+                    if (icon) {
+                        icon.classList.remove('folder-closed');
+                        icon.classList.add('folder-open');
+                    }
                 }
             }
-        }
-    });
+        });
+    } catch (e) {
+        console.error('Error rendering tree:', e);
+        alert('Error rendering project tree. Please refresh the page.');
+    }
 }
 
 
@@ -238,8 +258,9 @@ function addChild(parentId, name = 'Idea') {
     if (parent) {
         const newNode = { id: Date.now().toString(), text: name, children: [] };
         parent.children.push(newNode);
-        saveData();
-        renderTree();
+        if (saveData()) {
+            renderTree();
+        }
     }
 }
 
@@ -281,8 +302,9 @@ function saveEdit(id, textEl) {
         const node = findNode(data.nodes, id);
         if (node) {
             node.text = newText;
-            saveData();
-            renderTree();
+            if (saveData()) {
+                renderTree();
+            }
         }
     } else {
         // If empty, revert or delete?
@@ -320,8 +342,9 @@ function moveNode(fromId, toId) {
             return false;
         }
         add(data.nodes);
-        saveData();
-        renderTree();
+        if (saveData()) {
+            renderTree();
+        }
     }
 }
 
@@ -362,8 +385,9 @@ function completeGroup() {
         children: selectedNodes
     };
     siblings.splice(minIndex, 0, groupNode);
-    saveData();
-    renderTree();
+    if (saveData()) {
+        renderTree();
+    }
     selectedIds = [];
 }
 
@@ -374,8 +398,9 @@ function expandGroup(nodeId) {
         const siblings = parent ? parent.children : data.nodes;
         const index = siblings.findIndex(n => n.id === nodeId);
         siblings.splice(index, 1, ...node.children);
-        saveData();
-        renderTree();
+        if (saveData()) {
+            renderTree();
+        }
     }
 }
 
