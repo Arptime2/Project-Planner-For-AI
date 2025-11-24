@@ -100,7 +100,7 @@ body {
     width: calc(100% - 100px);
     margin-left: 100px;
     overflow-x: auto;
-    touch-action: pan-x pan-y;
+    touch-action: auto;
 }
 
 
@@ -213,9 +213,7 @@ button:hover {
     box-shadow: 0 8px 25px rgba(0, 255, 136, 0.6), 0 0 40px rgba(0, 255, 136, 0.3);
 }
 
-#tree button {
-    margin: 5px;
-}
+
 
 .add-item-section button {
     flex: 1;
@@ -317,30 +315,7 @@ button:hover {
 
 
 
-.folder-buttons {
-    display: none;
-    position: absolute;
-    right: 8px;
-    top: 8px;
-}
 
-.folder-item:hover .folder-buttons {
-    display: block;
-}
-
-.folder-item.editing .folder-buttons {
-    display: none !important;
-}
-
-.folder-buttons button {
-    padding: 4px 8px;
-    font-size: 12px;
-    margin: 0 2px;
-    background: rgba(0, 255, 136, 0.3);
-    border: 1px solid rgba(0, 255, 136, 0.2);
-    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4), 0 0 25px rgba(0, 255, 136, 0.2);
-    backdrop-filter: blur(15px);
-}
 
 .folder-sublist {
     margin-left: 30px;
@@ -421,17 +396,7 @@ button:hover {
 
 
 
-.delete-btn {
-    background: rgba(255, 0, 0, 0.3) !important;
-    border: 1px solid rgba(255, 0, 0, 0.2);
-    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4), 0 0 25px rgba(255, 0, 0, 0.2) !important;
-    backdrop-filter: blur(15px);
-}
 
-.delete-btn:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6), 0 0 35px rgba(255, 0, 0, 0.3) !important;
-}
 
 @media (max-width: 600px) {
     .add-item-section button {

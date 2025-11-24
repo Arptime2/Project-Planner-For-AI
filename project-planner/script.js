@@ -11,6 +11,7 @@
  let pointerMoved = false;
  let lastTouchY = 0;
  let preventPullToRefresh = false;
+ const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 
 
@@ -62,7 +63,13 @@ function addEventListeners() {
 
 if (!currentProject) { alert('No project selected. Please open a project first.'); window.location.href = '../main.html'; }
 else {
-    data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": []}');
+    try {
+        data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": []}');
+    } catch (e) {
+        console.error('Failed to load project data:', e);
+        data = { nodes: [] };
+        alert('Failed to load project data. Starting with empty project.');
+    }
     renderTree();
     addEventListeners();
     // Move fixed elements to body to avoid stacking context issues
@@ -81,10 +88,18 @@ document.getElementById('submitNewItem').onclick = () => {
     }
 };
 
+document.getElementById('tree').addEventListener('click', (e) => {
+    if (pendingItemName && !e.target.closest('.folder-item')) {
+        pendingItemName = null;
+        document.querySelector('.container').classList.remove('selection-mode');
+    }
+});
+
 function saveData() {
     try {
         const jsonData = JSON.stringify(data);
-        if (jsonData.length > 4 * 1024 * 1024) { // 4MB limit check
+        const limit = isMobile ? 2 * 1024 * 1024 : 4 * 1024 * 1024; // 2MB on mobile, 4MB desktop
+        if (jsonData.length > limit) {
             alert('Project data is too large. Please reduce the number of items.');
             return false;
         }
@@ -142,33 +157,33 @@ function renderItem(node, ul) {
     li.dataset.id = node.id;
     if (node.type === 'group') {
         li.classList.add('group');
-        li.onclick = () => expandGroup(node.id);
-    } else {
-        li.onclick = () => {
-            if (pendingItemName) {
-                addChild(node.id, pendingItemName);
-                pendingItemName = null;
-                document.querySelector('.container').classList.remove('selection-mode');
-            }
-        };
-        // Pointer events for tap interactions
-        li.addEventListener('pointerdown', (e) => {
-            if (e.target.closest('.folder-text') || e.target.closest('.folder-icon')) return;
-            e.stopPropagation();
-            pointerDownTime = Date.now();
-            pointerStartX = e.clientX;
-            pointerStartY = e.clientY;
-            pointerMoved = false;
-        });
-        li.addEventListener('pointermove', (e) => {
-            if (Math.abs(e.clientX - pointerStartX) > 10 || Math.abs(e.clientY - pointerStartY) > 10) {
-                pointerMoved = true;
-            }
-        });
-        li.addEventListener('pointerup', (e) => {
-            if (e.target.closest('.folder-text') || e.target.closest('.folder-icon')) return;
-            e.stopPropagation();
-            if (pointerMoved || Date.now() - pointerDownTime > 500) return; // Not a tap
+    }
+    // Pointer events for tap interactions
+    li.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.folder-text') || e.target.closest('.folder-icon')) return;
+        e.stopPropagation();
+        pointerDownTime = Date.now();
+        pointerStartX = e.clientX;
+        pointerStartY = e.clientY;
+        pointerMoved = false;
+    });
+    li.addEventListener('pointermove', (e) => {
+        const threshold = isMobile ? 20 : 10;
+        if (Math.abs(e.clientX - pointerStartX) > threshold || Math.abs(e.clientY - pointerStartY) > threshold) {
+            pointerMoved = true;
+        }
+    });
+    li.addEventListener('pointerup', (e) => {
+        if (e.target.closest('.folder-text') || e.target.closest('.folder-icon')) return;
+        e.stopPropagation();
+        if (pointerMoved || Date.now() - pointerDownTime > 500) return; // Not a tap
+        if (pendingItemName) {
+            addChild(node.id, pendingItemName);
+            pendingItemName = null;
+            document.querySelector('.container').classList.remove('selection-mode');
+        } else if (node.type === 'group') {
+            expandGroup(node.id);
+        } else {
             if (isSelectMode) {
                 const index = selectedIds.indexOf(node.id);
                 if (index > -1) {
@@ -190,8 +205,8 @@ function renderItem(node, ul) {
                     li.classList.add('moving');
                 }
             }
-        });
-    }
+        }
+    });
     const icon = document.createElement('span');
     if (node.type === 'group') {
         icon.className = 'folder-icon group';
@@ -216,16 +231,14 @@ function renderItem(node, ul) {
             }
         };
     }
-    const text = document.createElement('span');
-    text.className = 'folder-text';
-    text.contentEditable = false;
-    text.textContent = node.text;
-    if (node.type !== 'group') {
-        text.ondblclick = () => editNode(node.id);
-    }
-    const btns = document.createElement('div');
-    btns.className = 'folder-buttons';
-    li.append(icon, text, btns);
+     const text = document.createElement('span');
+     text.className = 'folder-text';
+     text.contentEditable = false;
+     text.textContent = node.text;
+     if (node.type !== 'group' && !isMobile) {
+         text.ondblclick = () => editNode(node.id);
+     }
+     li.append(icon, text);
     if (node.children?.length && node.type !== 'group') {
         const subUl = document.createElement('ul');
         subUl.className = 'folder-sublist';

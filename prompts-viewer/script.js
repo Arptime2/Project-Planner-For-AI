@@ -7,31 +7,41 @@ let lastCheckpointIndex = 0;
 const lastTreeHashKey = `${currentProject}_lastTreeHash`;
 
 function regeneratePrompts() {
-    const data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": [], "ideas": []}');
-    const currentHash = JSON.stringify(data);
-    const storedHash = localStorage.getItem(lastTreeHashKey);
-    if (storedHash !== currentHash) {
-        currentPromptIndex = 0;
-        lastCheckpointIndex = 0;
-        localStorage.setItem(`${currentProject}_promptIndex`, '0');
+    try {
+        const data = JSON.parse(localStorage.getItem(currentProject) || '{"nodes": [], "ideas": []}');
+        const currentHash = JSON.stringify(data);
+        const storedHash = localStorage.getItem(lastTreeHashKey);
+        if (storedHash !== currentHash) {
+            currentPromptIndex = 0;
+            lastCheckpointIndex = 0;
+            localStorage.setItem(`${currentProject}_promptIndex`, '0');
+        }
+        localStorage.setItem(lastTreeHashKey, currentHash);
+        promptNodes = [];
+        allPrompts = generatePrompts(data.nodes);
+        if (currentPromptIndex >= allPrompts.length) {
+            currentPromptIndex = 0;
+            lastCheckpointIndex = 0;
+            localStorage.setItem(`${currentProject}_promptIndex`, '0');
+        }
+        showCurrentPrompt();
+        displayAllPrompts();
+    } catch (e) {
+        console.error('Error regenerating prompts:', e);
+        alert('Error loading project data for prompts.');
     }
-    localStorage.setItem(lastTreeHashKey, currentHash);
-    promptNodes = [];
-    allPrompts = generatePrompts(data.nodes);
-    if (currentPromptIndex >= allPrompts.length) {
-        currentPromptIndex = 0;
-        lastCheckpointIndex = 0;
-        localStorage.setItem(`${currentProject}_promptIndex`, '0');
-    }
-    showCurrentPrompt();
-    displayAllPrompts();
 }
 
 if (!currentProject) {
     alert('No project selected. Please open a project first.');
     window.location.href = '../main.html';
 } else {
-    regeneratePrompts();
+    try {
+        regeneratePrompts();
+    } catch (e) {
+        console.error('Error in prompts viewer:', e);
+        alert('Error loading prompts.');
+    }
 }
 
 function generatePrompts(nodes, prompts = [], prefix = '') {
