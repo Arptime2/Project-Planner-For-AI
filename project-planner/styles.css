@@ -306,10 +306,8 @@ button:hover {
     cursor: text;
     color: var(--text-primary);
     overflow: visible;
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    max-width: calc(100% - 60px);
+    white-space: nowrap;
+    max-width: none;
     display: inline-block;
 }
 
