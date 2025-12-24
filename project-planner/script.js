@@ -327,8 +327,9 @@ function renderItem(node, ul) {
             expandGroup(node.id);
          } else {
              if (isDeleteMode) {
+                 if (findParent(data.nodes, node.id) === null) return; // prevent deleting root
                  deleteNode(node.id);
-              } else if (isSelectMode) {
+             } else if (isSelectMode) {
                  const index = selectedIds.indexOf(node.id);
                  if (index > -1) {
                      selectedIds.splice(index, 1);
