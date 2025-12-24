@@ -279,6 +279,9 @@ function renderItem(node, ul) {
     const li = document.createElement('li');
     li.className = 'folder-item';
     li.dataset.id = node.id;
+    if (selectedForMove === node.id) {
+        li.classList.add('moving');
+    }
     if (node.type === 'group') {
         li.classList.add('group');
     }
@@ -317,23 +320,25 @@ function renderItem(node, ul) {
                     selectedIds.push(node.id);
                     li.classList.add('selected');
                 }
-            } else {
-                if (selectedForMove) {
-                    if (selectedForMove !== node.id) {
-                        moveNode(selectedForMove, node.id);
-                    }
-                    selectedForMove = null;
-                    document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
-                } else {
-                    // Prevent moving root items to avoid deleting the entire project
-                    if (!findParent(data.nodes, node.id)) {
-                        selectedForMove = null;
-                    } else {
-                        selectedForMove = node.id;
-                        li.classList.add('moving');
-                    }
-                }
-            }
+             } else {
+                 if (selectedForMove) {
+                     if (selectedForMove === node.id) {
+                         selectedForMove = null;
+                         li.classList.remove('moving');
+                         renderTree();
+                     }
+                     // else do nothing, use drop zones
+                 } else {
+                     // Prevent moving root items to avoid deleting the entire project
+                     if (!findParent(data.nodes, node.id)) {
+                         selectedForMove = null;
+                     } else {
+                         selectedForMove = node.id;
+                         li.classList.add('moving');
+                         renderTree();
+                     }
+                 }
+             }
         }
     });
     const icon = document.createElement('span');
@@ -368,14 +373,95 @@ function renderItem(node, ul) {
         text.ondblclick = () => editNode(node.id);
     }
     li.append(icon, text);
-    if (node.children?.length && node.type !== 'group') {
+    if (node.children !== undefined && node.type !== 'group') {
         const subUl = document.createElement('ul');
         subUl.className = 'folder-sublist';
-        subUl.style.display = 'none';
         li.appendChild(subUl);
+        if (selectedForMove && node.children.length === 0) {
+            subUl.appendChild(createDropZone(subUl)); // for empty folders, drop inside
+            subUl.style.display = 'block';
+        } else {
+            subUl.style.display = 'none';
+        }
         node.children.forEach(child => renderItem(child, subUl));
     }
     ul.appendChild(li);
+    if (selectedForMove && node.children !== undefined && node.type !== 'group') {
+        ul.appendChild(createDropZone()); // under each folder
+    }
+}
+
+function createDropZone() {
+    const dropLi = document.createElement('li');
+    dropLi.className = 'drop-zone';
+    dropLi.innerHTML = '&nbsp;';
+    dropLi.onclick = () => {
+        let dropParent;
+        let insertIndex;
+        const currentParent = findParent(data.nodes, selectedForMove);
+        const prevLi = dropLi.previousElementSibling;
+        if (!prevLi) {
+            // drop at start of subUl, insert as first child of the folder
+            const ul = dropLi.parentElement;
+            const parentLi = ul.parentElement;
+            if (parentLi && parentLi.classList.contains('folder-item')) {
+                const folderId = parentLi.dataset.id;
+                dropParent = findNode(data.nodes, folderId);
+                if (!dropParent) return;
+                const siblings = dropParent.children;
+                insertIndex = 0;
+            } else {
+                return;
+            }
+        } else if (prevLi.classList.contains('folder-item')) {
+            const targetId = prevLi.dataset.id;
+            const targetNode = findNode(data.nodes, targetId);
+            if (!targetNode) return;
+            dropParent = findParent(data.nodes, targetId);
+            const siblings = dropParent ? dropParent.children : data.nodes;
+            const targetIndex = siblings.findIndex(n => n.id === targetId);
+            insertIndex = targetIndex + 1;
+        } else {
+            return;
+        }
+        if (currentParent !== dropParent && dropParent === null) return; // prevent moving to root
+        const siblings = dropParent ? dropParent.children : data.nodes;
+        const fromIndex = siblings.findIndex(n => n.id === selectedForMove);
+        if (fromIndex !== -1 && fromIndex < insertIndex) {
+            insertIndex--;
+        }
+        let fromNode = null;
+        function remove(nodes) {
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].id === selectedForMove) { fromNode = nodes.splice(i, 1)[0]; return true; }
+                if (remove(nodes[i].children)) return true;
+            }
+            return false;
+        }
+        remove(data.nodes);
+        if (fromNode) {
+            siblings.splice(insertIndex, 0, fromNode);
+            selectedForMove = null;
+            document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
+            if (saveData()) {
+                renderTree();
+                // keep the dropParent's sublist expanded after move
+                if (dropParent && typeof dropParent === 'object' && dropParent.id) {
+                    const li = document.querySelector(`.folder-item[data-id="${dropParent.id}"]`);
+                    if (li) {
+                        const sublist = li.querySelector('.folder-sublist');
+                        if (sublist) sublist.style.display = 'block';
+                        const icon = li.querySelector('.folder-icon');
+                        if (icon) {
+                            icon.classList.remove('folder-closed');
+                            icon.classList.add('folder-open');
+                        }
+                    }
+                }
+            }
+        }
+    };
+    return dropLi;
 }
 
 function renderTree() {
@@ -408,6 +494,14 @@ function renderTree() {
                     }
                 }
             }
+        }
+        // if moving, show all sublists for drop zones
+        if (selectedForMove) {
+            document.querySelectorAll('.folder-sublist').forEach(s => s.style.display = 'block');
+            document.querySelectorAll('.folder-icon.folder-closed').forEach(icon => {
+                icon.classList.remove('folder-closed');
+                icon.classList.add('folder-open');
+            });
         }
     } catch (e) {
         console.error('Error rendering tree:', e);
