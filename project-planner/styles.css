@@ -133,7 +133,7 @@ h2 {
 .add-item-section {
     margin-bottom: 20px;
     display: flex;
-    gap: 10px;
+    gap: 5px;
     align-items: center;
     position: fixed;
     top: 0;
@@ -484,6 +484,12 @@ button:hover {
     }
     .add-item-section input {
         padding: 4px 8px;
+    }
+}
+
+@media (max-width: 600px) {
+    .add-item-section button {
+        padding: 10px 12px;
     }
 }
 
