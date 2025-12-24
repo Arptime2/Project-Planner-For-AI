@@ -622,9 +622,7 @@ function renderTree() {
 
 
 function switchTab(tab) {
-    if (tab === 'prompts') {
-        window.location.href = '../prompts-viewer/index.html';
-    } else if (tab === 'project') {
+    if (tab === 'project') {
         // already here
     }
 }
