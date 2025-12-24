@@ -181,6 +181,18 @@ h2 {
     cursor: pointer;
 }
 
+.container.selection-mode .section {
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.6), inset 0 0 30px rgba(0, 255, 136, 0.4);
+}
+
+.container.delete-mode .section {
+    box-shadow: 0 0 25px rgba(255, 0, 0, 0.6), inset 0 0 30px rgba(255, 0, 0, 0.4);
+}
+
+.container.select-mode .section {
+    box-shadow: 0 0 25px rgba(255, 255, 0, 0.6), inset 0 0 30px rgba(255, 255, 0, 0.4);
+}
+
 .folder-item.selected {
     background: rgba(255, 255, 136, 0.3);
 }

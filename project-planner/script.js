@@ -21,16 +21,19 @@ function addEventListeners() {
     const selectModeBtn = document.getElementById('selectModeBtn');
     selectModeBtn.addEventListener('click', () => {
         isSelectMode = !isSelectMode;
+        const container = document.querySelector('.container');
         if (isSelectMode) {
             selectModeBtn.textContent = '✕';
             const groupBtn = document.getElementById('groupSelectedBtn');
             groupBtn.style.display = 'inline';
             groupBtn.textContent = '⊞';
+            container.classList.add('select-mode');
             selectedForMove = null;
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
         } else {
             selectModeBtn.textContent = '☛';
             document.getElementById('groupSelectedBtn').style.display = 'none';
+            container.classList.remove('select-mode');
             selectedIds = [];
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
         }
@@ -39,6 +42,8 @@ function addEventListeners() {
     const deleteModeBtn = document.getElementById('deleteModeBtn');
     deleteModeBtn.addEventListener('click', () => {
         isDeleteMode = !isDeleteMode;
+        const container = document.querySelector('.container');
+        container.classList.toggle('delete-mode', isDeleteMode);
         deleteModeBtn.classList.toggle('active', isDeleteMode);
     });
 
@@ -49,6 +54,7 @@ function addEventListeners() {
             isSelectMode = false;
             selectModeBtn.textContent = '☛';
             groupSelectedBtn.style.display = 'none';
+            document.querySelector('.container').classList.remove('select-mode');
         }
     });
 
@@ -322,7 +328,7 @@ function renderItem(node, ul) {
          } else {
              if (isDeleteMode) {
                  deleteNode(node.id);
-             } else if (isSelectMode) {
+              } else if (isSelectMode) {
                  const index = selectedIds.indexOf(node.id);
                  if (index > -1) {
                      selectedIds.splice(index, 1);
