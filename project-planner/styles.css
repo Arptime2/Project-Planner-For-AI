@@ -487,12 +487,6 @@ button:hover {
     }
 }
 
-@media (max-width: 600px) {
-    .add-item-section button {
-        padding: 10px 12px;
-    }
-}
-
 @media (max-width: 400px) {
     .add-item-section button {
         padding: 2px 4px;
