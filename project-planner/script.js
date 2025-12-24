@@ -205,20 +205,34 @@ function saveEdit(id, textEl) {
     textEl.contentEditable = false;
 }
 
+function isDescendant(parent, childId) {
+    const stack = [parent];
+    while (stack.length > 0) {
+        const current = stack.pop();
+        if (current.id === childId) {
+            return true;
+        }
+        stack.push(...(current.children || []));
+    }
+    return false;
+}
+
 function moveNode(fromId, toId) {
-    let fromNode = null;
+    const fromNode = findNode(data.nodes, fromId);
+    const toNode = findNode(data.nodes, toId);
+    let fromNodeCopy = null;
     function remove(nodes) {
         for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].id === fromId) { fromNode = nodes.splice(i, 1)[0]; return true; }
+            if (nodes[i].id === fromId) { fromNodeCopy = nodes.splice(i, 1)[0]; return true; }
             if (remove(nodes[i].children)) return true;
         }
         return false;
     }
     remove(data.nodes);
-    if (fromNode) {
+    if (fromNodeCopy) {
         function add(nodes) {
             for (let node of nodes) {
-                if (node.id === toId) { node.children.push(fromNode); return true; }
+                if (node.id === toId) { node.children.push(fromNodeCopy); return true; }
                 if (add(node.children)) return true;
             }
             return false;
@@ -316,19 +330,41 @@ function renderItem(node, ul) {
         }
     });
     li.addEventListener('pointerup', (e) => {
-        if (e.target.closest('.folder-text') || e.target.closest('.folder-icon')) return;
         e.stopPropagation();
-        if (pointerMoved || Date.now() - pointerDownTime > 500) return; // Not a tap
+        if (Date.now() - pointerDownTime > 500) return; // Not a tap
         if (pendingItemName) {
             addChild(node.id, pendingItemName);
             pendingItemName = null;
             document.querySelector('.container').classList.remove('selection-mode');
         } else if (node.type === 'group') {
             expandGroup(node.id);
-         } else {
+        } else if (e.target.closest('.folder-text')) {
+            editNode(node.id);
+        } else if (e.target.closest('.folder-icon')) {
+            const sublist = li.querySelector('.folder-sublist');
+            if (sublist) {
+                sublist.style.display = sublist.style.display === 'none' ? 'block' : 'none';
+                if (sublist.style.display === 'none') {
+                    li.querySelector('.folder-icon').classList.remove('folder-open');
+                    li.querySelector('.folder-icon').classList.add('folder-closed');
+                } else {
+                    li.querySelector('.folder-icon').classList.remove('folder-closed');
+                    li.querySelector('.folder-icon').classList.add('folder-open');
+                }
+            }
+        } else {
              if (isDeleteMode) {
                  if (findParent(data.nodes, node.id) === null) return; // prevent deleting root
                  deleteNode(node.id);
+             } else if (selectedForMove) {
+                 const fromNode = findNode(data.nodes, selectedForMove);
+                 if (fromNode && isDescendant(fromNode, node.id)) {
+                     selectedForMove = null;
+                     document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
+                     renderTree();
+                 } else {
+                     moveNode(selectedForMove, node.id);
+                 }
              } else if (isSelectMode) {
                  const index = selectedIds.indexOf(node.id);
                  if (index > -1) {
