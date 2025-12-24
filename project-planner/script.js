@@ -3,8 +3,9 @@
  let data;
  let pendingItemName = null;
  let selectedIds = [];
- let selectedForMove = null;
- let isSelectMode = false;
+  let selectedForMove = null;
+  let isSelectMode = false;
+  let isDeleteMode = false;
  let pointerDownTime = 0;
  let pointerStartX = 0;
  let pointerStartY = 0;
@@ -21,16 +22,24 @@ function addEventListeners() {
     selectModeBtn.addEventListener('click', () => {
         isSelectMode = !isSelectMode;
         if (isSelectMode) {
-            selectModeBtn.textContent = 'Exit Select Mode';
-            document.getElementById('groupSelectedBtn').style.display = 'inline';
+            selectModeBtn.textContent = '✕';
+            const groupBtn = document.getElementById('groupSelectedBtn');
+            groupBtn.style.display = 'inline';
+            groupBtn.textContent = '⊞';
             selectedForMove = null;
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
         } else {
-            selectModeBtn.textContent = 'Enter Select Mode';
+            selectModeBtn.textContent = '☛';
             document.getElementById('groupSelectedBtn').style.display = 'none';
             selectedIds = [];
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
         }
+    });
+
+    const deleteModeBtn = document.getElementById('deleteModeBtn');
+    deleteModeBtn.addEventListener('click', () => {
+        isDeleteMode = !isDeleteMode;
+        deleteModeBtn.classList.toggle('active', isDeleteMode);
     });
 
     const groupSelectedBtn = document.getElementById('groupSelectedBtn');
@@ -38,7 +47,7 @@ function addEventListeners() {
         if (selectedIds.length > 0) {
             completeGroup();
             isSelectMode = false;
-            selectModeBtn.textContent = 'Enter Select Mode';
+            selectModeBtn.textContent = '☛';
             groupSelectedBtn.style.display = 'none';
         }
     });
@@ -310,25 +319,27 @@ function renderItem(node, ul) {
             document.querySelector('.container').classList.remove('selection-mode');
         } else if (node.type === 'group') {
             expandGroup(node.id);
-        } else {
-            if (isSelectMode) {
-                const index = selectedIds.indexOf(node.id);
-                if (index > -1) {
-                    selectedIds.splice(index, 1);
-                    li.classList.remove('selected');
-                } else {
-                    selectedIds.push(node.id);
-                    li.classList.add('selected');
-                }
-                  } else {
-                      if (selectedForMove) {
-                          if (selectedForMove === node.id) {
-                              selectedForMove = null;
-                              li.classList.remove('moving');
-                              animateOutDropZones(() => renderTree());
-                          }
-                          // else do nothing, use drop zones
-                      } else {
+         } else {
+             if (isDeleteMode) {
+                 deleteNode(node.id);
+             } else if (isSelectMode) {
+                 const index = selectedIds.indexOf(node.id);
+                 if (index > -1) {
+                     selectedIds.splice(index, 1);
+                     li.classList.remove('selected');
+                 } else {
+                     selectedIds.push(node.id);
+                     li.classList.add('selected');
+                 }
+              } else {
+                 if (selectedForMove) {
+                     if (selectedForMove === node.id) {
+                         selectedForMove = null;
+                         li.classList.remove('moving');
+                         animateOutDropZones(() => renderTree());
+                     }
+                     // else do nothing, use drop zones
+                 } else {
                      // Prevent moving root items to avoid deleting the entire project
                      if (!findParent(data.nodes, node.id)) {
                          selectedForMove = null;
@@ -427,6 +438,20 @@ function animateOutDropZones(callback) {
         });
         setTimeout(callback, 50);
     }, 250);
+}
+
+function deleteNode(id) {
+    function remove(nodes) {
+        for (let i = 0; i < nodes.length; i++) {
+            if (nodes[i].id === id) { nodes.splice(i, 1); return true; }
+            if (remove(nodes[i].children)) return true;
+        }
+        return false;
+    }
+    remove(data.nodes);
+    if (saveData()) {
+        renderTree();
+    }
 }
 
 function createDropZone() {

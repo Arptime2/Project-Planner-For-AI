@@ -218,13 +218,69 @@ button:hover {
 .add-item-section button {
     flex: 1;
     margin: 5px;
-    height: 2em;
+    height: 1.3em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: flex;
     align-items: center;
     justify-content: center;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    font-size: 20px;
+    font-weight: bold;
+    position: relative;
+}
+
+#submitNewItem::before {
+    content: '+';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+#deleteModeBtn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 8px;
+    border: 1px solid white;
+    border-top: none;
+    border-radius: 0 0 2px 2px;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    background: linear-gradient(to bottom, transparent 0%, transparent 50%, white 50%, white 100%);
+    background-size: 100% 2px;
+    background-repeat: repeat-y;
+    background-position: 0 2px;
+}
+
+#deleteModeBtn::after {
+    content: '';
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 1px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+#deleteModeBtn.active::before {
+    border-color: #ff4444;
+    box-shadow: 0 0 10px #ff4444;
+}
+
+#deleteModeBtn.active::after {
+    background: #ff4444;
+    box-shadow: 0 0 10px #ff4444;
 }
 
 .folder-list {
