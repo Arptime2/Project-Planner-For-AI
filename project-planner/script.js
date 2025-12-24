@@ -381,8 +381,8 @@ function renderItem(node, ul) {
             const dropLi = createDropZone(subUl);
             subUl.appendChild(dropLi);
             requestAnimationFrame(() => {
-                dropLi.style.height = '20px';
-                dropLi.style.padding = '2px 0';
+                dropLi.style.height = '10px';
+                dropLi.style.padding = '1px 0';
             });
             subUl.style.display = 'block';
         } else {
@@ -395,8 +395,8 @@ function renderItem(node, ul) {
         const dropLi = createDropZone();
         ul.appendChild(dropLi);
         requestAnimationFrame(() => {
-            dropLi.style.height = '20px';
-            dropLi.style.padding = '2px 0';
+            dropLi.style.height = '10px';
+            dropLi.style.padding = '1px 0';
         });
     }
 }
