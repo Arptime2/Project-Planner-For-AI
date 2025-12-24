@@ -320,15 +320,15 @@ function renderItem(node, ul) {
                     selectedIds.push(node.id);
                     li.classList.add('selected');
                 }
-             } else {
-                 if (selectedForMove) {
-                     if (selectedForMove === node.id) {
-                         selectedForMove = null;
-                         li.classList.remove('moving');
-                         renderTree();
-                     }
-                     // else do nothing, use drop zones
-                 } else {
+                  } else {
+                      if (selectedForMove) {
+                          if (selectedForMove === node.id) {
+                              selectedForMove = null;
+                              li.classList.remove('moving');
+                              animateOutDropZones(() => renderTree());
+                          }
+                          // else do nothing, use drop zones
+                      } else {
                      // Prevent moving root items to avoid deleting the entire project
                      if (!findParent(data.nodes, node.id)) {
                          selectedForMove = null;
@@ -378,7 +378,12 @@ function renderItem(node, ul) {
         subUl.className = 'folder-sublist';
         li.appendChild(subUl);
         if (selectedForMove && node.children.length === 0) {
-            subUl.appendChild(createDropZone(subUl)); // for empty folders, drop inside
+            const dropLi = createDropZone(subUl);
+            subUl.appendChild(dropLi);
+            requestAnimationFrame(() => {
+                dropLi.style.height = '20px';
+                dropLi.style.padding = '2px 0';
+            });
             subUl.style.display = 'block';
         } else {
             subUl.style.display = 'none';
@@ -387,14 +392,50 @@ function renderItem(node, ul) {
     }
     ul.appendChild(li);
     if (selectedForMove && node.children !== undefined && node.type !== 'group') {
-        ul.appendChild(createDropZone()); // under each folder
+        const dropLi = createDropZone();
+        ul.appendChild(dropLi);
+        requestAnimationFrame(() => {
+            dropLi.style.height = '20px';
+            dropLi.style.padding = '2px 0';
+        });
     }
+}
+
+function animateOutDropZones(callback) {
+    const dropLis = document.querySelectorAll('.drop-zone');
+    if (dropLis.length === 0) {
+        callback();
+        return;
+    }
+    dropLis.forEach(dropLi => {
+        dropLi.style.height = '0px';
+        dropLi.style.padding = '0';
+        dropLi.style.margin = '0';
+    });
+    dropLis.forEach(dropLi => {
+        dropLi.innerHTML = '';
+        dropLi.style.height = '0px';
+        dropLi.style.padding = '0';
+        dropLi.style.margin = '0';
+    });
+    setTimeout(() => {
+        dropLis.forEach(dropLi => {
+            dropLi.style.borderWidth = '0px';
+            dropLi.style.boxShadow = 'none';
+            dropLi.style.opacity = '0';
+            dropLi.style.display = 'none';
+        });
+        setTimeout(callback, 50);
+    }, 250);
 }
 
 function createDropZone() {
     const dropLi = document.createElement('li');
     dropLi.className = 'drop-zone';
     dropLi.innerHTML = '&nbsp;';
+    dropLi.style.height = '0px';
+    dropLi.style.padding = '0';
+    dropLi.style.margin = '0';
     dropLi.onclick = () => {
         let dropParent;
         let insertIndex;
@@ -443,22 +484,24 @@ function createDropZone() {
             siblings.splice(insertIndex, 0, fromNode);
             selectedForMove = null;
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
-            if (saveData()) {
-                renderTree();
-                // keep the dropParent's sublist expanded after move
-                if (dropParent && typeof dropParent === 'object' && dropParent.id) {
-                    const li = document.querySelector(`.folder-item[data-id="${dropParent.id}"]`);
-                    if (li) {
-                        const sublist = li.querySelector('.folder-sublist');
-                        if (sublist) sublist.style.display = 'block';
-                        const icon = li.querySelector('.folder-icon');
-                        if (icon) {
-                            icon.classList.remove('folder-closed');
-                            icon.classList.add('folder-open');
+            animateOutDropZones(() => {
+                if (saveData()) {
+                    renderTree();
+                    // keep the dropParent's sublist expanded after move
+                    if (dropParent && typeof dropParent === 'object' && dropParent.id) {
+                        const li = document.querySelector(`.folder-item[data-id="${dropParent.id}"]`);
+                        if (li) {
+                            const sublist = li.querySelector('.folder-sublist');
+                            if (sublist) sublist.style.display = 'block';
+                            const icon = li.querySelector('.folder-icon');
+                            if (icon) {
+                                icon.classList.remove('folder-closed');
+                                icon.classList.add('folder-open');
+                            }
                         }
                     }
                 }
-            }
+            });
         }
     };
     return dropLi;
