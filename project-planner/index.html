@@ -10,17 +10,17 @@
     <div class="tabs">
         <button class="tab active" onclick="switchTab('project')">Project</button>
         <button class="tab" onclick="switchTab('prompts')">Prompts</button>
-        <button class="tab" onclick="window.location.href='../main.html'">Back</button>
+        <button id="submitNewItem" class="tab">+</button>
+        <button id="deleteModeBtn" type="button" class="tab"></button>
+        <button id="selectModeBtn" type="button" class="tab">☛</button>
+        <button id="groupSelectedBtn" type="button" class="tab" style="display: none;">⊞</button>
+        <button class="tab back-btn" onclick="window.location.href='../main.html'">Back</button>
     </div>
     <div class="container">
         <div class="section tree-section">
             <h2>Idea Folder Structure</h2>
             <div class="add-item-section">
                 <input type="text" id="newItemName" placeholder="Enter new item name">
-                <button id="submitNewItem"></button>
-                <button id="deleteModeBtn" type="button"></button>
-                <button id="selectModeBtn" type="button">☛</button>
-                <button id="groupSelectedBtn" type="button" style="display: none;"></button>
             </div>
             <div id="tree"></div>
         </div>

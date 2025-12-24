@@ -62,15 +62,15 @@ body {
     width: 80px;
     margin: 5px 0;
     text-align: center;
+    height: 50px;
 }
 
-.tab:last-child {
+.back-btn {
     flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0;
+    height: auto;
 }
+
+
 
 .tab.active {
     background: rgba(0, 255, 136, 0.5);
@@ -150,7 +150,7 @@ h2 {
 }
 
 .add-item-section input {
-    flex: 0 0 70%;
+    flex: 1;
     margin: 0;
     padding: 8px 12px;
     border-radius: 12px;
@@ -243,17 +243,7 @@ button:hover {
     position: relative;
 }
 
-#submitNewItem::before {
-    content: '+';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 20px;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
-}
+
 
 #deleteModeBtn::before {
     content: '';
