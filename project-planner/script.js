@@ -113,6 +113,26 @@ else {
     document.body.appendChild(addItem);
 }
 
+function showDeleteModal(id) {
+    const node = findNode(data.nodes, id);
+    document.getElementById('deleteItemName').textContent = node.text;
+    document.getElementById('deleteModal').style.display = 'flex';
+    const modal = document.getElementById('deleteModal');
+    const closeModal = () => hideDeleteModal();
+    document.getElementById('confirmDelete').onclick = () => {
+        deleteNode(id);
+        closeModal();
+    };
+    document.getElementById('cancelDelete').onclick = closeModal;
+    modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+    };
+}
+
+function hideDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
 document.getElementById('newItemName').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         const name = e.target.value.trim();
@@ -403,7 +423,7 @@ function renderItem(node, ul) {
             }
             if (isDeleteMode) {
                 if (findParent(data.nodes, node.id) === null) return;
-                deleteNode(node.id);
+                showDeleteModal(node.id);
             } else if (selectedForMove) {
                 if (selectedForMove === node.id) {
                     selectedForMove = null;
