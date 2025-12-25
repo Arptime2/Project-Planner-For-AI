@@ -429,7 +429,19 @@ function renderItem(node, ul) {
                     li.classList.remove('moving');
                     renderTree();
                 } else {
-                    moveNode(selectedForMove, node.id);
+                    const fromNode = findNode(data.nodes, selectedForMove);
+                    if (fromNode && isDescendant(fromNode, node.id)) {
+                        selectedForMove = null;
+                        document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
+                        renderTree();
+                    } else if (node.children && node.children.length === 0 && node.type !== 'group') {
+                        // Prevent dropping into files
+                        selectedForMove = null;
+                        document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
+                        renderTree();
+                    } else {
+                        moveNode(selectedForMove, node.id);
+                    }
                 }
             } else if (isSelectMode) {
                 const index = selectedIds.indexOf(node.id);
@@ -486,7 +498,7 @@ function renderItem(node, ul) {
     }
     li.append(icon, text);
 
-    if (node.children !== undefined && node.type !== 'group') {
+    if (node.children !== undefined && node.type !== 'group' && !icon.classList.contains('file')) {
         const subUl = document.createElement('ul');
         subUl.className = 'folder-sublist';
         li.appendChild(subUl);

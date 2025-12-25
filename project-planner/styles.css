@@ -17,27 +17,27 @@ body {
 }
 
 :root {
-    --bg-primary: #0d0d0d;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #252525;
-    --text-primary: #ffffff;
-    --text-secondary: #b0b0b0;
-    --text-muted: #808080;
-    --accent-primary: #00d4aa;
-    --accent-secondary: #007acc;
-    --accent-error: #ff4757;
-    --accent-warning: #ffa726;
-    --border-light: rgba(255, 255, 255, 0.08);
-    --border-medium: rgba(255, 255, 255, 0.15);
-    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
-    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.5);
-    --glow-primary: 0 0 12px rgba(0, 212, 170, 0.4);
-    --glow-secondary: 0 0 12px rgba(0, 122, 204, 0.4);
-    --glow-error: 0 0 12px rgba(255, 71, 87, 0.4);
-    --radius-small: 6px;
-    --radius-medium: 10px;
-    --radius-large: 16px;
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent-primary: #007bff;
+    --accent-secondary: #fd7e14;
+    --accent-error: #da3633;
+    --accent-warning: #d29922;
+    --border-light: rgba(240, 246, 252, 0.1);
+    --border-medium: rgba(240, 246, 252, 0.2);
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --glow-primary: 0 0 12px rgba(0, 123, 255, 0.5);
+    --glow-secondary: 0 0 12px rgba(253, 126, 20, 0.5);
+    --glow-error: 0 0 12px rgba(218, 54, 51, 0.5);
+    --radius-small: 8px;
+    --radius-medium: 12px;
+    --radius-large: 20px;
 }
 
 .tabs {
@@ -50,8 +50,8 @@ body {
     backdrop-filter: blur(30px) saturate(1.2);
     border: 1px solid var(--border-light);
     border-right: 2px solid var(--border-medium);
-    border-radius: 0 var(--radius-medium) var(--radius-medium) 0;
-    padding: 15px 0;
+    border-radius: 0;
+    padding: 15px 0 10px 0;
     z-index: 10000;
     box-shadow: var(--shadow-heavy), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     display: flex !important;
@@ -61,23 +61,38 @@ body {
 }
 
 .tab {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 212, 170, 0.1) 100%);
-    border: 1px solid var(--border-light);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.2) 0%, rgba(0, 123, 255, 0.1) 100%);
+    border: 1px solid var(--border-medium);
     color: var(--text-primary);
     padding: 12px 8px;
     border-radius: var(--radius-small);
     cursor: pointer;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 14px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow-light);
-    backdrop-filter: blur(10px) saturate(1.1);
+    backdrop-filter: blur(15px) saturate(1.1);
     width: 75px;
-    margin: 8px 0;
+    margin: 4px 0;
     text-align: center;
     height: 50px;
     position: relative;
     overflow: hidden;
+}
+
+.tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.tab:hover::before {
+    left: 100%;
 }
 
 .tab::before {
@@ -98,27 +113,31 @@ body {
 .back-btn {
     flex: 1;
     height: auto;
-    margin-top: auto;
-    margin-bottom: 15px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.2) 0%, rgba(0, 123, 255, 0.1) 100%);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-small);
+    box-shadow: var(--shadow-light);
 }
 
 
 
 .tab.active {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.4) 0%, rgba(0, 212, 170, 0.3) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.3) 0%, rgba(0, 123, 255, 0.2) 100%);
     box-shadow: var(--glow-primary), var(--shadow-medium);
     transform: translateY(-2px);
 }
 
 .tab:hover {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.3) 0%, rgba(0, 212, 170, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.3) 0%, rgba(0, 123, 255, 0.2) 100%);
     box-shadow: var(--glow-primary), var(--shadow-medium);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
 }
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: radial-gradient(ellipse at top, var(--bg-primary) 0%, var(--bg-secondary) 50%, #0a0a0a 100%);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
     margin: 0;
     padding: 0;
     height: 100vh;
@@ -136,40 +155,40 @@ body {
     overflow-x: auto;
     touch-action: auto;
     background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-    border-radius: var(--radius-large) 0 0 0;
+    border-radius: 20px 0 0 0;
 }
 
 
 
 .section {
     flex: 1;
-    background: linear-gradient(135deg, rgba(37, 37, 37, 0.8) 0%, rgba(26, 26, 26, 0.8) 100%);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(15, 15, 15, 0.9) 100%);
     backdrop-filter: blur(25px) saturate(1.1);
     border: 1px solid var(--border-light);
     padding: 25px;
     box-sizing: border-box;
     box-shadow: var(--shadow-heavy), inset 0 1px 0 rgba(255, 255, 255, 0.03);
     padding-top: 120px;
-    border-radius: var(--radius-large);
+    border-radius: 20px 20px 0 0;
     margin: 10px;
 }
 
 
 
 h2 {
-    color: var(--accent-secondary);
+    color: var(--text-primary);
     margin: 0;
     font-weight: 400;
-    text-shadow: var(--glow-secondary);
     position: fixed;
     top: 15px;
     left: 125px;
     z-index: 10002;
     padding: 8px 15px;
-    background: linear-gradient(135deg, rgba(0, 122, 204, 0.1) 0%, rgba(0, 122, 204, 0.05) 100%);
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
     border-radius: var(--radius-small);
     backdrop-filter: blur(10px);
     border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-light);
 }
 
 .add-item-section {
@@ -196,7 +215,7 @@ h2 {
     margin: 0;
     padding: 12px 16px;
     border-radius: var(--radius-small);
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 212, 170, 0.05) 100%);
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(0, 123, 255, 0.05) 100%);
     border: 1px solid var(--border-medium);
     box-shadow: var(--shadow-light), inset 0 1px 2px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(15px) saturate(1.1);
@@ -217,7 +236,7 @@ h2 {
     box-shadow: var(--glow-primary), var(--shadow-medium), inset 0 1px 2px rgba(0, 0, 0, 0.2);
     transform: translateY(-2px);
     outline: none;
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.15) 0%, rgba(0, 212, 170, 0.08) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 123, 255, 0.05) 100%);
 }
 
 .selection-mode .folder-item {
@@ -257,7 +276,7 @@ h2 {
 }
 
 .container.selection-mode .section {
-    box-shadow: 0 0 25px rgba(0, 255, 136, 0.6), inset 0 0 30px rgba(0, 255, 136, 0.4);
+    box-shadow: 0 0 25px rgba(0, 123, 255, 0.6), inset 0 0 30px rgba(0, 123, 255, 0.4);
 }
 
 .container.delete-mode .section {
@@ -285,14 +304,14 @@ h2 {
 }
 
 .selection-mode .folder-item:hover {
-    background: rgba(0, 255, 136, 0.02);
-    border: 1px solid rgba(0, 255, 136, 0.1);
+    background: rgba(0, 123, 255, 0.02);
+    border: 1px solid rgba(0, 123, 255, 0.1);
 }
 
 button {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 212, 170, 0.1) 100%);
-    color: var(--text-primary);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.2) 0%, rgba(0, 123, 255, 0.1) 100%);
     border: 1px solid var(--border-medium);
+    color: var(--text-primary);
     padding: 10px 16px;
     border-radius: var(--radius-small);
     cursor: pointer;
@@ -304,6 +323,27 @@ button {
     backdrop-filter: blur(15px) saturate(1.1);
     position: relative;
     overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--glow-primary), var(--shadow-medium);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.3) 0%, rgba(0, 123, 255, 0.2) 100%);
 }
 
 button::before {
@@ -339,7 +379,7 @@ button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    text-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
     font-size: 20px;
     font-weight: bold;
     position: relative;
@@ -358,7 +398,7 @@ button:hover {
     border: 1px solid white;
     border-top: none;
     border-radius: 0 0 2px 2px;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
     background: linear-gradient(to bottom, transparent 0%, transparent 50%, white 50%, white 100%);
     background-size: 100% 2px;
     background-repeat: repeat-y;
@@ -374,7 +414,7 @@ button:hover {
     width: 6px;
     height: 1px;
     background: white;
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
 }
 
 #deleteModeBtn.active::before {
@@ -400,13 +440,13 @@ button:hover {
     margin: 6px 0;
     cursor: pointer;
     position: relative;
-    padding: 12px 12px 12px 35px;
+    padding: 12px 12px 12px 32px;
     border-radius: var(--radius-small);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: block;
     overflow: hidden;
     pointer-events: auto;
-    background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(37, 37, 37, 0.8) 100%);
+    background: rgba(37, 37, 37, 0.1);
     border: 1px solid var(--border-light);
     box-shadow: var(--shadow-light);
 }
@@ -437,13 +477,12 @@ button:hover {
 }
 
 .folder-icon {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 100%;
     border-radius: var(--radius-small);
     position: absolute;
-    left: 8px;
-    top: 50%;
-    transform: translateY(-50%);
+    left: 0;
+    top: 0;
     cursor: pointer;
     border: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -457,13 +496,13 @@ button:hover {
 }
 
 .folder-icon.folder-closed {
-    background: linear-gradient(135deg, var(--accent-secondary) 0%, rgba(0, 122, 204, 0.8) 100%);
+    background: rgba(253, 126, 20, 0.7);
     box-shadow: var(--glow-secondary);
 }
 
 .folder-icon.folder-open {
-    background: linear-gradient(135deg, rgba(0, 122, 204, 0.6) 0%, rgba(0, 122, 204, 0.4) 100%);
-    box-shadow: 0 0 8px rgba(0, 122, 204, 0.3);
+    background: rgba(230, 126, 34, 0.5);
+    box-shadow: 0 0 8px rgba(230, 126, 34, 0.3);
 }
 
 .folder-icon.group {
@@ -491,11 +530,11 @@ button:hover {
 
 
 .folder-sublist {
-    margin-left: 35px;
+    margin-left: 15px;
     list-style-type: none;
     padding-left: 0;
     border-left: 2px solid var(--border-light);
-    padding-left: 15px;
+    padding-left: 10px;
     margin-top: 8px;
 }
 
@@ -676,7 +715,7 @@ button:hover {
 }
 
 .modal-content button {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 212, 170, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.2) 0%, rgba(0, 123, 255, 0.1) 100%);
     border: 1px solid var(--border-medium);
     color: var(--text-primary);
     padding: 12px 24px;
@@ -691,7 +730,7 @@ button:hover {
 .modal-content button:hover {
     transform: translateY(-2px);
     box-shadow: var(--glow-primary), var(--shadow-medium);
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.3) 0%, rgba(0, 212, 170, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.3) 0%, rgba(0, 123, 255, 0.2) 100%);
 }
 
 #confirmDelete {

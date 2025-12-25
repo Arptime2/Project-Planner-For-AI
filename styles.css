@@ -1,30 +1,30 @@
 :root {
-    --bg-primary: #0d0d0d;
-    --bg-secondary: #1a1a1a;
-    --bg-tertiary: #252525;
-    --text-primary: #ffffff;
-    --text-secondary: #b0b0b0;
-    --text-muted: #808080;
-    --accent-primary: #00d4aa;
-    --accent-secondary: #007acc;
-    --accent-error: #ff4757;
-    --accent-warning: #ffa726;
-    --border-light: rgba(255, 255, 255, 0.08);
-    --border-medium: rgba(255, 255, 255, 0.15);
-    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4);
-    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.5);
-    --glow-primary: 0 0 12px rgba(0, 212, 170, 0.4);
-    --glow-secondary: 0 0 12px rgba(0, 122, 204, 0.4);
-    --glow-error: 0 0 12px rgba(255, 71, 87, 0.4);
-    --radius-small: 6px;
-    --radius-medium: 10px;
-    --radius-large: 16px;
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #c9d1d9;
+    --text-muted: #8b949e;
+    --accent-primary: #007bff;
+    --accent-secondary: #fd7e14;
+    --accent-error: #da3633;
+    --accent-warning: #d29922;
+    --border-light: rgba(240, 246, 252, 0.1);
+    --border-medium: rgba(240, 246, 252, 0.2);
+    --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --glow-primary: 0 0 12px rgba(0, 123, 255, 0.5);
+    --glow-secondary: 0 0 12px rgba(253, 126, 20, 0.5);
+    --glow-error: 0 0 12px rgba(218, 54, 51, 0.5);
+    --radius-small: 8px;
+    --radius-medium: 12px;
+    --radius-large: 20px;
 }
 
 body {
     font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, #0a0a0a 100%);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -48,8 +48,7 @@ body {
 
 h1 {
     text-align: center;
-    color: var(--accent-primary);
-    text-shadow: var(--glow-primary);
+    color: var(--text-primary);
     font-weight: 400;
     margin-bottom: 50px;
     font-size: 2.5em;
@@ -103,15 +102,17 @@ input[type="text"]:focus {
     border-color: var(--accent-primary);
     box-shadow: var(--glow-primary), var(--shadow-medium), inset 0 1px 2px rgba(0, 0, 0, 0.2);
     outline: none;
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.1) 0%, rgba(0, 123, 255, 0.05) 100%);
 }
 
 button {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 212, 170, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.4) 0%, rgba(0, 123, 255, 0.3) 100%) !important;
     color: var(--text-primary);
     border: 1px solid var(--border-medium);
     padding: 12px 20px;
     border-radius: var(--radius-small);
     cursor: pointer;
+    margin: 5px;
     font-weight: 500;
     font-size: 14px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -120,6 +121,27 @@ button {
     position: relative;
     overflow: hidden;
 }
+
+button:hover {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.4) 0%, rgba(0, 123, 255, 0.3) 100%) !important;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+button:hover::before {
+    left: 100%;
+}
+
+
 
 button::before {
     content: '';
@@ -169,7 +191,7 @@ button:hover {
 }
 
 .project-list li button {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 212, 170, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.4) 0%, rgba(0, 123, 255, 0.3) 100%);
     border: 1px solid var(--border-medium);
     width: auto;
     margin-right: 10px;
@@ -182,7 +204,8 @@ button:hover {
 }
 
 .project-list li button:hover {
-    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6), 0 0 35px rgba(0, 255, 136, 0.3);
+    box-shadow: var(--glow-primary), var(--shadow-medium);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.5) 0%, rgba(0, 123, 255, 0.4) 100%);
 }
 
 .modal {
@@ -222,7 +245,7 @@ button:hover {
 }
 
 .modal-content button {
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 212, 170, 0.1) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.2) 0%, rgba(0, 123, 255, 0.1) 100%);
     border: 1px solid var(--border-medium);
     color: var(--text-primary);
     padding: 12px 24px;
@@ -237,7 +260,7 @@ button:hover {
 .modal-content button:hover {
     transform: translateY(-2px);
     box-shadow: var(--glow-primary), var(--shadow-medium);
-    background: linear-gradient(135deg, rgba(0, 212, 170, 0.3) 0%, rgba(0, 212, 170, 0.2) 100%);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.3) 0%, rgba(0, 123, 255, 0.2) 100%);
 }
 
 #confirmDelete {
