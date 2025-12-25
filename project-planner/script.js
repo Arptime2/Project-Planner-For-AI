@@ -606,14 +606,7 @@ function renderTree() {
                 }
             }
         }
-        // if moving, show all sublists for drop zones
-        if (selectedForMove) {
-            document.querySelectorAll('.folder-sublist').forEach(s => s.style.display = 'block');
-            document.querySelectorAll('.folder-icon.folder-closed').forEach(icon => {
-                icon.classList.remove('folder-closed');
-                icon.classList.add('folder-open');
-            });
-        }
+
     } catch (e) {
         console.error('Error rendering tree:', e);
         alert('Error rendering project tree. Please refresh the page.');
