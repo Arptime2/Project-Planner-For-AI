@@ -12,11 +12,14 @@
         
         <div class="section">
             <h2>Create New Project</h2>
-            <input type="text" id="newProjectName" placeholder="Enter project name">
-            <button onclick="createNewProject()">Create Project</button>
-            <br><br>
-            <button onclick="importProject()">Import Project</button>
-            <input type="file" id="importFile" accept=".json" style="display: none;">
+            <div class="create-section">
+                <input type="text" id="newProjectName" placeholder="Enter project name">
+                <div class="button-row">
+                    <button onclick="createNewProject()">Create Project</button>
+                    <button onclick="importProject()">Import Project</button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+            </div>
         </div>
         
         <div class="section">
@@ -25,6 +28,14 @@
         </div>
     </div>
 
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Delete Project</h3>
+            <p>Are you sure you want to delete "<span id="deleteItemName"></span>"?</p>
+            <button id="cancelDelete">Cancel</button>
+            <button id="confirmDelete">Delete</button>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>

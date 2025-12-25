@@ -16,7 +16,7 @@ function loadProjects() {
         exportBtn.onclick = () => exportProject(project.id, project.name);
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => deleteProject(project.id);
+        deleteBtn.onclick = () => showDeleteModal(project.id);
         buttonDiv.appendChild(openBtn);
         buttonDiv.appendChild(exportBtn);
         buttonDiv.appendChild(deleteBtn);
@@ -109,5 +109,27 @@ document.getElementById('importFile').addEventListener('change', (e) => {
     };
     reader.readAsText(file);
 });
+
+function showDeleteModal(id) {
+    const projects = JSON.parse(localStorage.getItem('projects') || '[]');
+    const project = projects.find(p => p.id === id);
+    if (!project) return;
+    document.getElementById('deleteItemName').textContent = project.name;
+    document.getElementById('deleteModal').style.display = 'flex';
+    const modal = document.getElementById('deleteModal');
+    const closeModal = () => hideDeleteModal();
+    document.getElementById('confirmDelete').onclick = () => {
+        deleteProject(id);
+        closeModal();
+    };
+    document.getElementById('cancelDelete').onclick = closeModal;
+    modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+    };
+}
+
+function hideDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
 
 window.onload = loadProjects;

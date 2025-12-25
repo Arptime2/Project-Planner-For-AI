@@ -95,13 +95,11 @@ else {
         data = { nodes: [] };
         alert('Failed to load project data. Starting with empty project.');
     }
-    renderTree();
-    addEventListeners();
-    // Move fixed elements to body to avoid stacking context issues
-    const h2 = document.querySelector('h2');
-    const addItem = document.querySelector('.add-item-section');
-    document.body.appendChild(h2);
-    document.body.appendChild(addItem);
+     renderTree();
+     addEventListeners();
+     // Move fixed elements to body to avoid stacking context issues
+     const addItem = document.querySelector('.add-item-section');
+     document.body.appendChild(addItem);
 }
 
 function showDeleteModal(id) {
