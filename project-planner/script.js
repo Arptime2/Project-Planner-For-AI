@@ -22,19 +22,19 @@
 function addEventListeners() {
     const selectModeBtn = document.getElementById('selectModeBtn');
     selectModeBtn.addEventListener('click', () => {
-        isSelectMode = !isSelectMode;
         const container = document.querySelector('.container');
-        if (isSelectMode) {
-            selectModeBtn.textContent = '✕';
-            const groupBtn = document.getElementById('groupSelectedBtn');
-            groupBtn.style.display = 'inline';
-            groupBtn.textContent = '⊞';
+        if (!isSelectMode) {
+            isSelectMode = true;
+            updateSelectButton();
             container.classList.add('select-mode');
             selectedForMove = null;
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
         } else {
-            selectModeBtn.textContent = '☛';
-            document.getElementById('groupSelectedBtn').style.display = 'none';
+            if (selectedIds.length > 0) {
+                completeGroup();
+            }
+            isSelectMode = false;
+            updateSelectButton();
             container.classList.remove('select-mode');
             selectedIds = [];
             document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
@@ -49,16 +49,7 @@ function addEventListeners() {
         deleteModeBtn.classList.toggle('active', isDeleteMode);
     });
 
-    const groupSelectedBtn = document.getElementById('groupSelectedBtn');
-    groupSelectedBtn.addEventListener('click', () => {
-        if (selectedIds.length > 0) {
-            completeGroup();
-            isSelectMode = false;
-            selectModeBtn.textContent = '☛';
-            groupSelectedBtn.style.display = 'none';
-            document.querySelector('.container').classList.remove('select-mode');
-        }
-    });
+
 
     const moveModeBtn = document.getElementById('moveModeBtn');
     moveModeBtn.addEventListener('click', () => {
@@ -131,6 +122,15 @@ function showDeleteModal(id) {
 
 function hideDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
+}
+
+function updateSelectButton() {
+    const selectModeBtn = document.getElementById('selectModeBtn');
+    if (isSelectMode) {
+        selectModeBtn.textContent = selectedIds.length > 0 ? '⊞' : 'Cancel';
+    } else {
+        selectModeBtn.textContent = '☛';
+    }
 }
 
 document.getElementById('newItemName').addEventListener('keydown', (e) => {
@@ -326,6 +326,7 @@ function completeGroup() {
         renderTree();
     }
     selectedIds = [];
+    updateSelectButton();
 }
 
 function expandGroup(nodeId) {
@@ -441,6 +442,7 @@ function renderItem(node, ul) {
                     selectedIds.push(node.id);
                     li.classList.add('selected');
                 }
+                updateSelectButton();
             } else {
                 if (!findParent(data.nodes, node.id)) {
                     selectedForMove = null;
