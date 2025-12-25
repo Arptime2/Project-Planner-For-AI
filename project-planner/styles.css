@@ -193,8 +193,16 @@ h2 {
     box-shadow: 0 0 25px rgba(255, 255, 0, 0.6), inset 0 0 30px rgba(255, 255, 0, 0.4);
 }
 
+.container.move-mode .section {
+    box-shadow: 0 0 25px rgba(0, 136, 255, 0.6), inset 0 0 30px rgba(0, 136, 255, 0.4);
+}
+
 .folder-item.selected {
     background: rgba(255, 255, 136, 0.3);
+}
+
+.folder-item.selected-for-move {
+    background: rgba(0, 136, 255, 0.3);
 }
 
 .folder-item.moving {
@@ -411,23 +419,7 @@ button:hover {
     box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
 }
 
-.move-btn {
-    background: rgba(0, 255, 136, 0.3);
-    border: 1px solid rgba(0, 255, 136, 0.2);
-    color: var(--text-primary);
-    padding: 2px 4px;
-    margin: 0 2px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: transform 0.2s;
-    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
-}
 
-.move-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
-}
 
 .children-container::before {
     content: '';

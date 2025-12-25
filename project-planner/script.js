@@ -4,7 +4,8 @@
  let pendingItemName = null;
  let selectedIds = [];
   let selectedForMove = null;
-  let selectedForLevelMove = null;
+  let isMoveMode = false;
+  let selectedForMoveItem = null;
   let isSelectMode = false;
   let isDeleteMode = false;
  let pointerDownTime = 0;
@@ -56,6 +57,23 @@ function addEventListeners() {
             selectModeBtn.textContent = '☛';
             groupSelectedBtn.style.display = 'none';
             document.querySelector('.container').classList.remove('select-mode');
+        }
+    });
+
+    const moveModeBtn = document.getElementById('moveModeBtn');
+    moveModeBtn.addEventListener('click', () => {
+        isMoveMode = !isMoveMode;
+        const container = document.querySelector('.container');
+        if (isMoveMode) {
+            moveModeBtn.textContent = '✕';
+            container.classList.add('move-mode');
+            selectedForMoveItem = null;
+            document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
+        } else {
+            moveModeBtn.textContent = '⊕';
+            container.classList.remove('move-mode');
+            selectedForMoveItem = null;
+            document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected-for-move'));
         }
     });
 
@@ -353,29 +371,31 @@ function renderItem(node, ul) {
                     li.querySelector('.folder-icon').classList.add('folder-open');
                 }
             }
-        } else if (e.target.closest('.move-btn')) {
-            // handled by onclick
         } else {
-            if (selectedForLevelMove) {
-                if (selectedForLevelMove === node.id) {
-                    selectedForLevelMove = null;
-                    li.classList.remove('moving');
-                    renderTree();
-                } else {
-                    const currentParent = findParent(data.nodes, selectedForLevelMove);
-                    const targetParent = findParent(data.nodes, node.id);
-                    if (currentParent === targetParent) {
-                        const siblings = currentParent ? currentParent.children : data.nodes;
-                        const fromIndex = siblings.findIndex(n => n.id === selectedForLevelMove);
-                        const toIndex = siblings.findIndex(n => n.id === node.id);
-                        if (fromIndex !== -1 && toIndex !== -1) {
-                            const [item] = siblings.splice(fromIndex, 1);
-                            siblings.splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, item);
-                            if (saveData()) renderTree();
+            if (isMoveMode) {
+                if (selectedForMoveItem) {
+                    if (selectedForMoveItem === node.id) {
+                        selectedForMoveItem = null;
+                        li.classList.remove('selected-for-move');
+                    } else {
+                        const currentParent = findParent(data.nodes, selectedForMoveItem);
+                        const targetParent = findParent(data.nodes, node.id);
+                        if (currentParent === targetParent) {
+                            const siblings = currentParent ? currentParent.children : data.nodes;
+                            const fromIndex = siblings.findIndex(n => n.id === selectedForMoveItem);
+                            const toIndex = siblings.findIndex(n => n.id === node.id);
+                            if (fromIndex !== -1 && toIndex !== -1) {
+                                const [item] = siblings.splice(fromIndex, 1);
+                                siblings.splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, item);
+                                if (saveData()) renderTree();
+                            }
                         }
+                        selectedForMoveItem = null;
+                        document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected-for-move'));
                     }
-                    selectedForLevelMove = null;
-                    document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
+                } else {
+                    selectedForMoveItem = node.id;
+                    li.classList.add('selected-for-move');
                 }
                 return;
             }
@@ -443,15 +463,7 @@ function renderItem(node, ul) {
         text.ondblclick = () => editNode(node.id);
     }
     li.append(icon, text);
-    const moveBtn = document.createElement('button');
-    moveBtn.textContent = 'Move';
-    moveBtn.className = 'move-btn';
-    moveBtn.onclick = () => {
-        selectedForLevelMove = node.id;
-        li.classList.add('moving');
-        renderTree();
-    };
-    li.appendChild(moveBtn);
+
     if (node.children !== undefined && node.type !== 'group') {
         const subUl = document.createElement('ul');
         subUl.className = 'folder-sublist';
