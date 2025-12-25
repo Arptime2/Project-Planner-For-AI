@@ -388,27 +388,45 @@ button:hover {
 }
 
 .drop-zone {
-    width: 100%;
+    width: 16px;
     height: 0px;
-    max-height: 10px;
-    background: rgba(0, 255, 136, 0.1);
-    border: 1px solid rgba(0, 170, 102, 0.2);
-    border-radius: 4px;
+    max-height: 16px;
+    background: none;
+    border: none;
+    box-shadow: none;
     cursor: pointer;
     padding: 0;
     margin: 0;
-    transition: height 0.2s linear, padding 0.2s linear, border-width 0.05s, box-shadow 0.05s, opacity 0.05s, background-color 0.3s;
-    box-shadow: 0 0 5px rgba(0, 255, 136, 0.1);
+    transition: height 0.2s linear, opacity 0.2s;
     display: block;
     text-align: center;
-    font-size: 12px;
-    color: #000;
+    font-size: 14px;
+    color: rgba(0, 255, 136, 0.5);
     overflow: hidden;
+    list-style: none;
 }
 
 .drop-zone:hover {
-    background: rgba(0, 170, 102, 0.3);
-    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    color: rgba(0, 255, 136, 0.8);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.move-btn {
+    background: rgba(0, 255, 136, 0.3);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    color: var(--text-primary);
+    padding: 2px 4px;
+    margin: 0 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.4);
+}
+
+.move-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.6);
 }
 
 .children-container::before {

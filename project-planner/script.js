@@ -4,6 +4,7 @@
  let pendingItemName = null;
  let selectedIds = [];
   let selectedForMove = null;
+  let selectedForLevelMove = null;
   let isSelectMode = false;
   let isDeleteMode = false;
  let pointerDownTime = 0;
@@ -339,7 +340,7 @@ function renderItem(node, ul) {
         } else if (node.type === 'group') {
             expandGroup(node.id);
         } else if (e.target.closest('.folder-text')) {
-            editNode(node.id);
+            if (!isMobile) editNode(node.id);
         } else if (e.target.closest('.folder-icon')) {
             const sublist = li.querySelector('.folder-sublist');
             if (sublist) {
@@ -352,47 +353,61 @@ function renderItem(node, ul) {
                     li.querySelector('.folder-icon').classList.add('folder-open');
                 }
             }
+        } else if (e.target.closest('.move-btn')) {
+            // handled by onclick
         } else {
-             if (isDeleteMode) {
-                 if (findParent(data.nodes, node.id) === null) return; // prevent deleting root
-                 deleteNode(node.id);
-             } else if (selectedForMove) {
-                 const fromNode = findNode(data.nodes, selectedForMove);
-                 if (fromNode && isDescendant(fromNode, node.id)) {
-                     selectedForMove = null;
-                     document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
-                     renderTree();
-                 } else {
-                     moveNode(selectedForMove, node.id);
-                 }
-             } else if (isSelectMode) {
-                 const index = selectedIds.indexOf(node.id);
-                 if (index > -1) {
-                     selectedIds.splice(index, 1);
-                     li.classList.remove('selected');
-                 } else {
-                     selectedIds.push(node.id);
-                     li.classList.add('selected');
-                 }
-              } else {
-                 if (selectedForMove) {
-                     if (selectedForMove === node.id) {
-                         selectedForMove = null;
-                         li.classList.remove('moving');
-                         animateOutDropZones(() => renderTree());
-                     }
-                     // else do nothing, use drop zones
-                 } else {
-                     // Prevent moving root items to avoid deleting the entire project
-                     if (!findParent(data.nodes, node.id)) {
-                         selectedForMove = null;
-                     } else {
-                         selectedForMove = node.id;
-                         li.classList.add('moving');
-                         renderTree();
-                     }
-                 }
-             }
+            if (selectedForLevelMove) {
+                if (selectedForLevelMove === node.id) {
+                    selectedForLevelMove = null;
+                    li.classList.remove('moving');
+                    renderTree();
+                } else {
+                    const currentParent = findParent(data.nodes, selectedForLevelMove);
+                    const targetParent = findParent(data.nodes, node.id);
+                    if (currentParent === targetParent) {
+                        const siblings = currentParent ? currentParent.children : data.nodes;
+                        const fromIndex = siblings.findIndex(n => n.id === selectedForLevelMove);
+                        const toIndex = siblings.findIndex(n => n.id === node.id);
+                        if (fromIndex !== -1 && toIndex !== -1) {
+                            const [item] = siblings.splice(fromIndex, 1);
+                            siblings.splice(toIndex > fromIndex ? toIndex - 1 : toIndex, 0, item);
+                            if (saveData()) renderTree();
+                        }
+                    }
+                    selectedForLevelMove = null;
+                    document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
+                }
+                return;
+            }
+            if (isDeleteMode) {
+                if (findParent(data.nodes, node.id) === null) return;
+                deleteNode(node.id);
+            } else if (selectedForMove) {
+                if (selectedForMove === node.id) {
+                    selectedForMove = null;
+                    li.classList.remove('moving');
+                    renderTree();
+                } else {
+                    moveNode(selectedForMove, node.id);
+                }
+            } else if (isSelectMode) {
+                const index = selectedIds.indexOf(node.id);
+                if (index > -1) {
+                    selectedIds.splice(index, 1);
+                    li.classList.remove('selected');
+                } else {
+                    selectedIds.push(node.id);
+                    li.classList.add('selected');
+                }
+            } else {
+                if (!findParent(data.nodes, node.id)) {
+                    selectedForMove = null;
+                } else {
+                    selectedForMove = node.id;
+                    li.classList.add('moving');
+                    renderTree();
+                }
+            }
         }
     });
     const icon = document.createElement('span');
@@ -418,6 +433,7 @@ function renderItem(node, ul) {
                 }
             }
         };
+
     }
     const text = document.createElement('span');
     text.className = 'folder-text';
@@ -427,61 +443,26 @@ function renderItem(node, ul) {
         text.ondblclick = () => editNode(node.id);
     }
     li.append(icon, text);
+    const moveBtn = document.createElement('button');
+    moveBtn.textContent = 'Move';
+    moveBtn.className = 'move-btn';
+    moveBtn.onclick = () => {
+        selectedForLevelMove = node.id;
+        li.classList.add('moving');
+        renderTree();
+    };
+    li.appendChild(moveBtn);
     if (node.children !== undefined && node.type !== 'group') {
         const subUl = document.createElement('ul');
         subUl.className = 'folder-sublist';
         li.appendChild(subUl);
-        if (selectedForMove && node.children.length === 0) {
-            const dropLi = createDropZone(subUl);
-            subUl.appendChild(dropLi);
-            requestAnimationFrame(() => {
-                dropLi.style.height = '10px';
-                dropLi.style.padding = '1px 0';
-            });
-            subUl.style.display = 'block';
-        } else {
-            subUl.style.display = 'none';
-        }
+        subUl.style.display = 'none';
         node.children.forEach(child => renderItem(child, subUl));
     }
     ul.appendChild(li);
-    if (selectedForMove && node.children !== undefined && node.type !== 'group') {
-        const dropLi = createDropZone();
-        ul.appendChild(dropLi);
-        requestAnimationFrame(() => {
-            dropLi.style.height = '10px';
-            dropLi.style.padding = '1px 0';
-        });
-    }
 }
 
-function animateOutDropZones(callback) {
-    const dropLis = document.querySelectorAll('.drop-zone');
-    if (dropLis.length === 0) {
-        callback();
-        return;
-    }
-    dropLis.forEach(dropLi => {
-        dropLi.style.height = '0px';
-        dropLi.style.padding = '0';
-        dropLi.style.margin = '0';
-    });
-    dropLis.forEach(dropLi => {
-        dropLi.innerHTML = '';
-        dropLi.style.height = '0px';
-        dropLi.style.padding = '0';
-        dropLi.style.margin = '0';
-    });
-    setTimeout(() => {
-        dropLis.forEach(dropLi => {
-            dropLi.style.borderWidth = '0px';
-            dropLi.style.boxShadow = 'none';
-            dropLi.style.opacity = '0';
-            dropLi.style.display = 'none';
-        });
-        setTimeout(callback, 50);
-    }, 250);
-}
+
 
 function deleteNode(id) {
     function remove(nodes) {
@@ -497,83 +478,7 @@ function deleteNode(id) {
     }
 }
 
-function createDropZone() {
-    const dropLi = document.createElement('li');
-    dropLi.className = 'drop-zone';
-    dropLi.innerHTML = '&nbsp;';
-    dropLi.style.height = '0px';
-    dropLi.style.padding = '0';
-    dropLi.style.margin = '0';
-    dropLi.onclick = () => {
-        let dropParent;
-        let insertIndex;
-        const currentParent = findParent(data.nodes, selectedForMove);
-        const prevLi = dropLi.previousElementSibling;
-        if (!prevLi) {
-            // drop at start of subUl, insert as first child of the folder
-            const ul = dropLi.parentElement;
-            const parentLi = ul.parentElement;
-            if (parentLi && parentLi.classList.contains('folder-item')) {
-                const folderId = parentLi.dataset.id;
-                dropParent = findNode(data.nodes, folderId);
-                if (!dropParent) return;
-                const siblings = dropParent.children;
-                insertIndex = 0;
-            } else {
-                return;
-            }
-        } else if (prevLi.classList.contains('folder-item')) {
-            const targetId = prevLi.dataset.id;
-            const targetNode = findNode(data.nodes, targetId);
-            if (!targetNode) return;
-            dropParent = findParent(data.nodes, targetId);
-            const siblings = dropParent ? dropParent.children : data.nodes;
-            const targetIndex = siblings.findIndex(n => n.id === targetId);
-            insertIndex = targetIndex + 1;
-        } else {
-            return;
-        }
-        if (currentParent !== dropParent && dropParent === null) return; // prevent moving to root
-        const siblings = dropParent ? dropParent.children : data.nodes;
-        const fromIndex = siblings.findIndex(n => n.id === selectedForMove);
-        if (fromIndex !== -1 && fromIndex < insertIndex) {
-            insertIndex--;
-        }
-        let fromNode = null;
-        function remove(nodes) {
-            for (let i = 0; i < nodes.length; i++) {
-                if (nodes[i].id === selectedForMove) { fromNode = nodes.splice(i, 1)[0]; return true; }
-                if (remove(nodes[i].children)) return true;
-            }
-            return false;
-        }
-        remove(data.nodes);
-        if (fromNode) {
-            siblings.splice(insertIndex, 0, fromNode);
-            selectedForMove = null;
-            document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('moving'));
-            animateOutDropZones(() => {
-                if (saveData()) {
-                    renderTree();
-                    // keep the dropParent's sublist expanded after move
-                    if (dropParent && typeof dropParent === 'object' && dropParent.id) {
-                        const li = document.querySelector(`.folder-item[data-id="${dropParent.id}"]`);
-                        if (li) {
-                            const sublist = li.querySelector('.folder-sublist');
-                            if (sublist) sublist.style.display = 'block';
-                            const icon = li.querySelector('.folder-icon');
-                            if (icon) {
-                                icon.classList.remove('folder-closed');
-                                icon.classList.add('folder-open');
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    };
-    return dropLi;
-}
+
 
 function renderTree() {
     try {
