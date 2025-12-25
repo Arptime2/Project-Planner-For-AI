@@ -113,14 +113,16 @@ else {
     document.body.appendChild(addItem);
 }
 
-document.getElementById('submitNewItem').onclick = () => {
-    const name = document.getElementById('newItemName').value.trim();
-    if (name) {
-        pendingItemName = name;
-        document.getElementById('newItemName').value = '';
-        document.querySelector('.container').classList.add('selection-mode');
+document.getElementById('newItemName').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        const name = e.target.value.trim();
+        if (name) {
+            pendingItemName = name;
+            e.target.value = '';
+            document.querySelector('.container').classList.add('selection-mode');
+        }
     }
-};
+});
 
 
 
