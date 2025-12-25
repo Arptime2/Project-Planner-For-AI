@@ -446,9 +446,9 @@ button:hover {
     display: block;
     overflow: hidden;
     pointer-events: auto;
-    background: rgba(37, 37, 37, 0.1);
-    border: 1px solid var(--border-light);
-    box-shadow: var(--shadow-light);
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(240, 246, 252, 0.05);
+    box-shadow: none;
 }
 
 .folder-item.drag-over {
