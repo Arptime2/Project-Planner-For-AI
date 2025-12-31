@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Planner For AI</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="http://localhost:5566/client.js"></script>
 </head>
 <body>
     <div class="container">
@@ -17,6 +18,8 @@
                 <div class="button-row">
                     <button onclick="createNewProject()">Create Project</button>
                     <button onclick="importProject()">Import Project</button>
+                    <button id="saveBtn">Save</button>
+                    <button id="syncBtn">Sync</button>
                     <input type="file" id="importFile" accept=".json" style="display: none;">
                 </div>
             </div>

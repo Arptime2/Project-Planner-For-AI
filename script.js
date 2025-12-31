@@ -132,4 +132,40 @@ function hideDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
 }
 
-window.onload = loadProjects;
+function saveToServer() {
+    const projects = JSON.parse(localStorage.getItem('projects') || '[]');
+    if (projects.length === 0) {
+        alert('No projects to save.');
+        return;
+    }
+    projects.forEach(project => {
+        const data = JSON.parse(localStorage.getItem(project.id));
+        saveData('project-planner', project.name, { id: project.id, text: project.name, data })
+            .then(() => console.log('Saved:', project.name))
+            .catch(err => alert('Error saving ' + project.name + ': ' + err.message));
+    });
+    alert('Save to server initiated.');
+}
+
+function syncFromServer() {
+    getData('project-planner')
+        .then(result => {
+            const files = result.files;
+            if (files.length === 0) {
+                alert('No projects found on server.');
+                return;
+            }
+            const projects = files.map(f => ({ id: f.id, name: f.text }));
+            localStorage.setItem('projects', JSON.stringify(projects));
+            files.forEach(f => localStorage.setItem(f.id, JSON.stringify(f.data)));
+            loadProjects();
+            alert('Synced from server successfully.');
+        })
+        .catch(err => alert('Error syncing: ' + err.message));
+}
+
+window.onload = () => {
+    loadProjects();
+    document.getElementById('saveBtn').onclick = saveToServer;
+    document.getElementById('syncBtn').onclick = syncFromServer;
+};
