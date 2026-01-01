@@ -8,13 +8,9 @@
   let selectedForMoveItem = null;
   let isSelectMode = false;
   let isDeleteMode = false;
- let pointerDownTime = 0;
- let pointerStartX = 0;
- let pointerStartY = 0;
- let pointerMoved = false;
- let lastTouchY = 0;
- let preventPullToRefresh = false;
- const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+let lastTouchY = 0;
+let preventPullToRefresh = false;
+
 
 
 
@@ -102,25 +98,7 @@ else {
      document.body.appendChild(addItem);
 }
 
-function showDeleteModal(id) {
-    const node = findNode(data.nodes, id);
-    document.getElementById('deleteItemName').textContent = node.text;
-    document.getElementById('deleteModal').style.display = 'flex';
-    const modal = document.getElementById('deleteModal');
-    const closeModal = () => hideDeleteModal();
-    document.getElementById('confirmDelete').onclick = () => {
-        deleteNode(id);
-        closeModal();
-    };
-    document.getElementById('cancelDelete').onclick = closeModal;
-    modal.onclick = (e) => {
-        if (e.target === modal) closeModal();
-    };
-}
 
-function hideDeleteModal() {
-    document.getElementById('deleteModal').style.display = 'none';
-}
 
 function updateSelectButton() {
     const selectModeBtn = document.getElementById('selectModeBtn');
@@ -144,10 +122,30 @@ document.getElementById('newItemName').addEventListener('keydown', (e) => {
 
 
 
+function showDeleteModal(id) {
+    const node = findNode(data.nodes, id);
+    document.getElementById('deleteItemName').textContent = node.text;
+    document.getElementById('deleteModal').style.display = 'flex';
+    const modal = document.getElementById('deleteModal');
+    const closeModal = () => hideDeleteModal();
+    document.getElementById('confirmDelete').onclick = () => {
+        deleteNode(id);
+        closeModal();
+    };
+    document.getElementById('cancelDelete').onclick = closeModal;
+    modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+    };
+}
+
+function hideDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+
 function saveData() {
     try {
         const jsonData = JSON.stringify(data);
-        const limit = isMobile ? 2 * 1024 * 1024 : 4 * 1024 * 1024; // 2MB on mobile, 4MB desktop
+        const limit = 2 * 1024 * 1024; // 2MB
         if (jsonData.length > limit) {
             alert('Project data is too large. Please reduce the number of items.');
             return false;
@@ -305,8 +303,6 @@ function renderItem(node, ul) {
     }
     const handleTap = (e) => {
         e.stopPropagation();
-        if (Date.now() - pointerDownTime > 500) return;
-        if (pointerMoved) return;
         if (pendingItemName) {
             addChild(node.id, pendingItemName);
             pendingItemName = null;
@@ -397,47 +393,7 @@ function renderItem(node, ul) {
             }
         }
     };
-    if (isMobile) {
-        li.addEventListener('touchstart', (e) => {
-            if (e.touches.length !== 1) return;
-            if (e.target.closest('.folder-icon')) return;
-            e.stopPropagation();
-            e.preventDefault();
-            pointerDownTime = Date.now();
-            pointerStartX = e.touches[0].clientX;
-            pointerStartY = e.touches[0].clientY;
-            pointerMoved = false;
-        });
-        li.addEventListener('touchmove', (e) => {
-            if (e.touches.length !== 1) return;
-            const threshold = 30;
-            if (Math.abs(e.touches[0].clientX - pointerStartX) > threshold || Math.abs(e.touches[0].clientY - pointerStartY) > threshold) {
-                pointerMoved = true;
-            }
-        });
-        li.addEventListener('touchend', (e) => {
-            if (e.changedTouches.length !== 1) return;
-            handleTap(e);
-        });
-    } else {
-        li.addEventListener('pointerdown', (e) => {
-            if (e.target.closest('.folder-icon')) return;
-            e.stopPropagation();
-            pointerDownTime = Date.now();
-            pointerStartX = e.clientX;
-            pointerStartY = e.clientY;
-            pointerMoved = false;
-        });
-        li.addEventListener('pointermove', (e) => {
-            const threshold = 10;
-            if (Math.abs(e.clientX - pointerStartX) > threshold || Math.abs(e.clientY - pointerStartY) > threshold) {
-                pointerMoved = true;
-            }
-        });
-        li.addEventListener('pointerup', (e) => {
-            handleTap(e);
-        });
-    }
+    li.addEventListener('click', handleTap);
     const icon = document.createElement('span');
     if (node.type === 'group') {
         icon.className = 'folder-icon group';
@@ -448,19 +404,7 @@ function renderItem(node, ul) {
         } else {
             icon.classList.add('file');
         }
-        icon.onclick = () => {
-            const sublist = li.querySelector('.folder-sublist');
-            if (sublist) {
-                sublist.style.display = sublist.style.display === 'none' ? 'block' : 'none';
-                if (sublist.style.display === 'none') {
-                    icon.classList.remove('folder-open');
-                    icon.classList.add('folder-closed');
-                } else {
-                    icon.classList.remove('folder-closed');
-                    icon.classList.add('folder-open');
-                }
-            }
-        };
+
 
     }
     const text = document.createElement('span');
