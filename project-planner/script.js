@@ -189,60 +189,9 @@ function addChild(parentId, name = 'Idea') {
     }
 }
 
-function editNode(id) {
-    const node = findNode(data.nodes, id);
-    if (node) {
-        const li = document.querySelector(`.folder-item[data-id="${id}"]`);
-        if (li) {
-            li.classList.add('editing');
-            const textEl = li.querySelector('.folder-text');
-            if (textEl) {
-                textEl.contentEditable = true;
-                textEl.focus();
-                // Select all text
-                const range = document.createRange();
-                range.selectNodeContents(textEl);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-                textEl.onblur = () => saveEdit(id, textEl);
-                textEl.onkeydown = (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        textEl.blur();
-                    }
-                };
-            }
-        }
-    }
-}
 
-function saveEdit(id, textEl) {
-    const li = textEl.closest('.folder-item');
-    if (li) li.classList.remove('editing');
-    const newText = textEl.textContent.trim();
-    if (newText) {
-        const node = findNode(data.nodes, id);
-        if (node) {
-            node.text = newText;
-            if (saveData()) {
-                renderTree();
-            }
-        }
-    } else {
-        // Delete the item if edited to empty
-        const parent = findParent(data.nodes, id);
-        const siblings = parent ? parent.children : data.nodes;
-        const index = siblings.findIndex(n => n.id === id);
-        if (index !== -1) {
-            siblings.splice(index, 1);
-            if (saveData()) {
-                renderTree();
-            }
-        }
-    }
-    textEl.contentEditable = false;
-}
+
+
 
 function isDescendant(parent, childId) {
     const stack = [parent];
@@ -356,7 +305,7 @@ function renderItem(node, ul) {
     }
     // Pointer events for tap interactions
     li.addEventListener('pointerdown', (e) => {
-        if (e.target.closest('.folder-text') || e.target.closest('.folder-icon')) return;
+        if (e.target.closest('.folder-icon')) return;
         e.stopPropagation();
         pointerDownTime = Date.now();
         pointerStartX = e.clientX;
@@ -378,8 +327,6 @@ function renderItem(node, ul) {
             document.querySelector('.container').classList.remove('selection-mode');
         } else if (node.type === 'group') {
             expandGroup(node.id);
-        } else if (e.target.closest('.folder-text')) {
-            if (!isMobile) editNode(node.id);
         } else if (e.target.closest('.folder-icon')) {
             const sublist = li.querySelector('.folder-sublist');
             if (sublist) {
@@ -493,9 +440,6 @@ function renderItem(node, ul) {
     text.className = 'folder-text';
     text.contentEditable = false;
     text.textContent = node.text;
-    if (node.type !== 'group' && !isMobile) {
-        text.ondblclick = () => editNode(node.id);
-    }
     li.append(icon, text);
 
     if (node.children !== undefined && node.type !== 'group' && !icon.classList.contains('file')) {

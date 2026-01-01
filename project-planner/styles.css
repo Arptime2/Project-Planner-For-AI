@@ -511,7 +511,7 @@ button:hover {
 }
 
 .folder-text {
-    cursor: pointer;
+    cursor: default;
     color: var(--text-primary);
     overflow: visible;
     white-space: nowrap;
@@ -519,10 +519,7 @@ button:hover {
     display: inline-block;
     font-weight: 400;
     transition: color 0.2s;
-}
-
-.folder-text:hover {
-    color: var(--accent-primary);
+    user-select: none;
 }
 
 
