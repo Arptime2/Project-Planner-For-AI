@@ -303,24 +303,10 @@ function renderItem(node, ul) {
     if (node.type === 'group') {
         li.classList.add('group');
     }
-    // Pointer events for tap interactions
-    li.addEventListener('pointerdown', (e) => {
-        if (e.target.closest('.folder-icon')) return;
+    const handleTap = (e) => {
         e.stopPropagation();
-        pointerDownTime = Date.now();
-        pointerStartX = e.clientX;
-        pointerStartY = e.clientY;
-        pointerMoved = false;
-    });
-    li.addEventListener('pointermove', (e) => {
-        const threshold = isMobile ? 20 : 10;
-        if (Math.abs(e.clientX - pointerStartX) > threshold || Math.abs(e.clientY - pointerStartY) > threshold) {
-            pointerMoved = true;
-        }
-    });
-    li.addEventListener('pointerup', (e) => {
-        e.stopPropagation();
-        if (Date.now() - pointerDownTime > 500) return; // Not a tap
+        if (Date.now() - pointerDownTime > 500) return;
+        if (pointerMoved) return;
         if (pendingItemName) {
             addChild(node.id, pendingItemName);
             pendingItemName = null;
@@ -410,7 +396,48 @@ function renderItem(node, ul) {
                 }
             }
         }
-    });
+    };
+    if (isMobile) {
+        li.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            if (e.target.closest('.folder-icon')) return;
+            e.stopPropagation();
+            e.preventDefault();
+            pointerDownTime = Date.now();
+            pointerStartX = e.touches[0].clientX;
+            pointerStartY = e.touches[0].clientY;
+            pointerMoved = false;
+        });
+        li.addEventListener('touchmove', (e) => {
+            if (e.touches.length !== 1) return;
+            const threshold = 30;
+            if (Math.abs(e.touches[0].clientX - pointerStartX) > threshold || Math.abs(e.touches[0].clientY - pointerStartY) > threshold) {
+                pointerMoved = true;
+            }
+        });
+        li.addEventListener('touchend', (e) => {
+            if (e.changedTouches.length !== 1) return;
+            handleTap(e);
+        });
+    } else {
+        li.addEventListener('pointerdown', (e) => {
+            if (e.target.closest('.folder-icon')) return;
+            e.stopPropagation();
+            pointerDownTime = Date.now();
+            pointerStartX = e.clientX;
+            pointerStartY = e.clientY;
+            pointerMoved = false;
+        });
+        li.addEventListener('pointermove', (e) => {
+            const threshold = 10;
+            if (Math.abs(e.clientX - pointerStartX) > threshold || Math.abs(e.clientY - pointerStartY) > threshold) {
+                pointerMoved = true;
+            }
+        });
+        li.addEventListener('pointerup', (e) => {
+            handleTap(e);
+        });
+    }
     const icon = document.createElement('span');
     if (node.type === 'group') {
         icon.className = 'folder-icon group';
